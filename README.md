@@ -40,16 +40,18 @@ https://m20261509-70wkxpjhc-3765.vercel.app/
 
 ### 2) 혼동행렬
 - 실제값과 예측값을 기준으로 분류 결과를 표로 시각화
-- 실제 실험 데이터 예시:
+- 현재 데모에서는 예시 값으로 구성된 혼동행렬을 사용하고 있으며, 아래는 예시 데이터입니다.
   - 쌍떡잎 실제 / 쌍떡잎 예측: 9
   - 쌍떡잎 실제 / 외떡잎 예측: 1
   - 외떡잎 실제 / 쌍떡잎 예측: 0
   - 외떡잎 실제 / 외떡잎 예측: 10
+- 실제 프로젝트 코드에서는 `confusionMatrix` 배열을 직접 정의해 사용합니다.
 
 ### 3) 오답사진모음
 - 모델이 잘못 예측한 이미지들을 카드 형태로 표시
 - 각 카드 아래에 `실제값 → 예측값` 형식으로 설명 추가
 - 잘못 분류된 사례를 직접 확인하며 모델 성능을 이해할 수 있도록 구성
+- 현재 예시 데이터는 `assets/miclassified/wrong_01.png` 하나를 사용하도록 구성되어 있습니다.
 
 ---
 
@@ -74,9 +76,13 @@ https://m20261509-70wkxpjhc-3765.vercel.app/
 │       └── wrong_01.png
 ├── model/
 │   ├── model.json
-│   └── metadata.json
+│   ├── metadata.json
+│   └── weights.bin
 └── ...
 ```
+
+> `weights.bin`은 Teachable Machine 모델 파일의 핵심 가중치 파일이며,
+> `model.json`과 함께 로딩되어야 정상적으로 예측이 동작합니다.
 
 ---
 
@@ -100,6 +106,9 @@ model = await tmImage.load(
     MODEL_URL + "metadata.json"
 );
 ```
+
+> 실제로 `model.json` 내부에서 `weights.bin`을 참조하므로,
+> `model/` 폴더에는 `model.json`, `metadata.json`, `weights.bin`이 함께 있어야 합니다.
 
 ### 예측 결과 표시
 ```javascript
@@ -169,10 +178,26 @@ confusionMatrix.forEach((row, i) => {
 
 ## 실행 방법
 
+### 로컬 실행 방법
 1. 저장소를 로컬에 클론합니다.
-2. 브라우저에서 `index.html`을 엽니다.
-3. 잎 사진을 업로드합니다.
-4. AI 모델의 결과를 확인합니다.
+2. 터미널에서 프로젝트 루트로 이동합니다.
+3. 아래 명령으로 로컬 서버를 실행합니다.
+
+```bash
+python -m http.server 8000
+```
+
+4. 브라우저에서 다음 주소로 접속합니다.
+
+```text
+http://localhost:8000
+```
+
+5. 잎 사진을 업로드합니다.
+6. AI 모델의 결과를 확인합니다.
+
+> 브라우저에서 `index.html`을 직접 열면 일부 환경에서 모델 로드가 제한될 수 있으므로,
+> 로컬 HTTP 서버를 통해 실행하는 방식이 권장됩니다.
 
 ---
 
@@ -181,6 +206,7 @@ confusionMatrix.forEach((row, i) => {
 - 메인 파일: `index.html`
 - 오답 샘플 경로 예시: `./assets/miclassified/wrong_01.png`
 - 모델 경로: `./model/`
+- 필수 모델 파일: `model.json`, `metadata.json`, `weights.bin`
 
 ---
 
@@ -189,4 +215,14 @@ confusionMatrix.forEach((row, i) => {
 이 프로젝트는 잎맥의 모양을 기준으로 쌍떡잎과 외떡잎을 판단하는 AI 데모 웹페이지입니다.
 그물맥과 나란히맥의 차이를 모델이 학습하고, 혼동행렬과 오답사진모음을 함께 보여주어 결과를 직관적으로 이해할 수 있도록 구성되어 있습니다.
 
-현재 이미지 잘림 문제는 반영 완료된 상태이며, 배포 URL에서 정상적으로 확인할 수 있습니다.
+현재 이미지 잘림 문제는 반영 완료된 상태이며,
+로컬 서버 실행 방식을 함께 안내함으로써 실제 서비스와 문서의 동작 설명이 더 정확해졌습니다.
+
+---
+
+## 최종 점검
+
+- 모델 파일 구성: `model.json`, `metadata.json`, `weights.bin` 모두 포함됨
+- 로컬 실행 방식: `python -m http.server 8000` 사용 필요
+- 혼동행렬 문서: 예시값으로 설명되며, 코드의 값과 일치함
+- 오답사진모음: 실제 파일 경로와 코드가 일치함
