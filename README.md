@@ -24,7 +24,7 @@
 
 ## 배포 주소
 
-https://m20261509-d5f4i2fcv-3765.vercel.app/
+https://m20261509-70wkxpjhc-3765.vercel.app/
 
 ---
 
