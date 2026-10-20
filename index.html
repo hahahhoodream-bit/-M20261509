@@ -14,6 +14,7 @@
         .bar-container { width: 100%; max-width: 350px; background-color: #ddd; margin: 5px auto 15px auto; border-radius: 10px; overflow: hidden; }
         .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.5s ease; }
         .unknown-msg { color: #e74c3c; font-size: 20px; margin-top: 15px; font-weight: bold; padding: 10px; border: 2px dashed #e74c3c; border-radius: 8px; max-width: 300px; margin-left: auto; margin-right: auto; }
+        .err-detail { font-size: 13px; color: #888; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -28,88 +29,84 @@
 
     <div id="label-container">AI 모델을 불러오는 중입니다... 잠시만 기다려주세요.</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/custom-teachablemachine-image.min.js"></script>
+    <!-- Teachable Machine 공식 조합: tfjs 1.3.1 + @teachablemachine/image (파일명: teachablemachine-image.min.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
 
     <script>
-        let model;
-        let labelContainer;
-        let maxPredictions;
+        let model = null;
+        let maxPredictions = 0;
 
         function setStatus(message) {
-            const container = document.getElementById("label-container");
-            if (container) container.innerHTML = message;
+            document.getElementById("label-container").innerHTML = message;
         }
 
         async function init() {
             try {
+                if (typeof tmImage === "undefined") {
+                    throw new Error("Teachable Machine 라이브러리를 불러오지 못했습니다. (인터넷 연결 또는 스크립트 주소 확인)");
+                }
                 const MODEL_URL = "./model/";
                 model = await tmImage.load(
                     MODEL_URL + "model.json",
                     MODEL_URL + "metadata.json"
                 );
-
                 maxPredictions = model.getTotalClasses();
-                labelContainer = document.getElementById("label-container");
-                labelContainer.innerHTML = "✨ 로딩 완료! 사진을 업로드해보세요.";
+                setStatus("✨ 로딩 완료! 사진을 업로드해보세요.");
             } catch (error) {
                 console.error("모델 로딩 실패:", error);
-                setStatus("❌ AI 모델 로딩에 실패했습니다.<br>모델 경로와 파일 구조를 다시 확인해 주세요.");
+                setStatus("❌ AI 모델 로딩에 실패했습니다.<br><span class='err-detail'>" + error.message + "</span>");
             }
         }
 
-        async function previewAndPredict(event) {
-            const file = event.target.files[0];
+        function previewAndPredict(event) {
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const imgElement = document.getElementById("image-preview");
-                imgElement.src = e.target.result;
-                imgElement.style.display = "block";
+            if (!model) {
+                setStatus("❌ 모델이 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
+                input.value = "";
+                return;
+            }
 
-                setStatus("🔍 분석 중입니다...");
+            const imgElement = document.getElementById("image-preview");
+            setStatus("🔍 분석 중입니다...");
 
-                imgElement.onload = async function() {
-                    try {
-                        if (!model) {
-                            setStatus("❌ 모델이 아직 준비되지 않았습니다.");
-                            return;
-                        }
+            // 사진이 다 불러와진 뒤에 분석 (onload를 src보다 먼저 지정)
+            imgElement.onload = async function () {
+                try {
+                    const prediction = await model.predict(imgElement);
+                    let html = "";
+                    let maxProb = 0;
 
-                        const prediction = await model.predict(imgElement);
-                        labelContainer.innerHTML = "";
+                    for (let i = 0; i < maxPredictions; i++) {
+                        const probability = prediction[i].probability;
+                        const probPercent = (probability * 100).toFixed(1);
+                        if (probability > maxProb) maxProb = probability;
 
-                        let maxProb = 0;
-
-                        for (let i = 0; i < maxPredictions; i++) {
-                            const className = prediction[i].className;
-                            const probability = prediction[i].probability;
-                            const probPercent = (probability * 100).toFixed(1);
-
-                            if (probability > maxProb) maxProb = probability;
-
-                            const resultHtml = `
-                                <div style="text-align: left; max-width: 350px; margin: 0 auto;">
-                                    <span>${className}</span>
-                                </div>
-                                <div class="bar-container">
-                                    <div class="bar" style="width: ${probPercent}%">${probPercent}%</div>
-                                </div>
-                            `;
-                            labelContainer.innerHTML += resultHtml;
-                        }
-
-                        if (maxProb < 0.7) {
-                            labelContainer.innerHTML += `<div class="unknown-msg">🤔 특징이 모호하여<br>잘 모르겠어요!</div>`;
-                        }
-                    } catch (error) {
-                        console.error("예측 실패:", error);
-                        setStatus("❌ 이미지 분석 중 오류가 발생했습니다.");
+                        html += `
+                            <div style="text-align: left; max-width: 350px; margin: 0 auto;">
+                                <span>${prediction[i].className}</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar" style="width: ${probPercent}%">${probPercent}%</div>
+                            </div>`;
                     }
-                };
+
+                    if (maxProb < 0.7) {
+                        html += `<div class="unknown-msg">🤔 특징이 모호하여<br>잘 모르겠어요!</div>`;
+                    }
+                    setStatus(html);
+                } catch (error) {
+                    console.error("예측 실패:", error);
+                    setStatus("❌ 이미지 분석 중 오류가 발생했습니다.<br><span class='err-detail'>" + error.message + "</span>");
+                }
             };
-            reader.readAsDataURL(file);
+
+            imgElement.style.display = "block";
+            imgElement.src = URL.createObjectURL(file);
+            input.value = ""; // 같은 사진을 다시 올려도 동작하도록 초기화
         }
 
         init();
