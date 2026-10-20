@@ -9,12 +9,103 @@
         h1 { color: #2c3e50; font-size: 24px; }
         p { color: #555; }
         #image-preview { max-width: 300px; max-height: 300px; margin: 20px auto; border-radius: 10px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .upload-btn { background-color: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: inline-block; margin-top: 10px; font-weight: bold; }
+        .upload-btn { background-color: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: inline-block; margin-top: 10px; font-weight: 600; }
         #label-container { margin-top: 20px; font-size: 18px; font-weight: bold; }
         .bar-container { width: 100%; max-width: 350px; background-color: #ddd; margin: 5px auto 15px auto; border-radius: 10px; overflow: hidden; }
         .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.5s ease; }
         .unknown-msg { color: #e74c3c; font-size: 20px; margin-top: 15px; font-weight: bold; padding: 10px; border: 2px dashed #e74c3c; border-radius: 8px; max-width: 300px; margin-left: auto; margin-right: auto; }
         .err-detail { font-size: 13px; color: #888; font-weight: normal; }
+
+        #report-panel {
+            margin-top: 32px;
+            display: block;
+        }
+
+        .report-box {
+            max-width: 760px;
+            margin: 18px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 24px 20px;
+        }
+
+        .report-box h2 {
+            margin: 0 0 18px 0;
+            font-size: 22px;
+            color: #2c3e50;
+        }
+
+        .matrix-table {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 16px;
+            background: #f9fbfd;
+            border: 1px solid #dfe8ef;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            border: 1px solid #dfe8ef;
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .matrix-table th {
+            background: #eef5fb;
+            color: #2c3e50;
+        }
+
+        .matrix-table td.highlight {
+            background: #dff6ed;
+            font-weight: 700;
+        }
+
+        .wrong-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .wrong-card {
+            background: #f8fafc;
+            border: 1px solid #e1e7ee;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .wrong-card img {
+            width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+            background: #eef2f7;
+        }
+
+        .wrong-card p {
+            margin: 10px 0 0;
+            font-size: 14px;
+            color: #2c3e50;
+            line-height: 1.4;
+        }
+
+        .no-image {
+            display: none;
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #edf2f7, #dfeaf5);
+            color: #6b7280;
+            font-size: 14px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -29,6 +120,18 @@
 
     <div id="label-container">AI 모델을 불러오는 중입니다... 잠시만 기다려주세요.</div>
 
+    <div id="report-panel">
+        <div class="report-box">
+            <h2>📊 혼동행렬</h2>
+            <table id="confusion-matrix" class="matrix-table"></table>
+        </div>
+
+        <div class="report-box">
+            <h2>📸 오답사진모음</h2>
+            <div id="wrong-gallery" class="wrong-gallery"></div>
+        </div>
+    </div>
+
     <!-- Teachable Machine 공식 조합: tfjs 1.3.1 + @teachablemachine/image (파일명: teachablemachine-image.min.js) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
@@ -37,8 +140,61 @@
         let model = null;
         let maxPredictions = 0;
 
+        // 실제 실험 결과 값으로 바꾸면 됨
+        // 행 = 실제 클래스, 열 = 예측 클래스
+        const classNames = ["쌍떡잎", "외떡잎"];
+        const confusionMatrix = [
+            [18, 2],
+            [3, 17]
+        ];
+
+        // 오답 사진 경로 예시. 실제 이미지 파일을 넣어주면 화면에 표시됨
+        // 예: ./assets/misclassified/01.png
+        const wrongExamples = [
+            { trueLabel: "쌍떡잎", predLabel: "외떡잎", src: "./assets/misclassified/01.png" },
+            { trueLabel: "외떡잎", predLabel: "쌍떡잎", src: "./assets/misclassified/02.png" },
+            { trueLabel: "쌍떡잎", predLabel: "외떡잎", src: "./assets/misclassified/03.png" },
+            { trueLabel: "외떡잎", predLabel: "쌍떡잎", src: "./assets/misclassified/04.png" }
+        ];
+
         function setStatus(message) {
             document.getElementById("label-container").innerHTML = message;
+        }
+
+        function renderConfusionMatrix() {
+            const table = document.getElementById("confusion-matrix");
+            let html = "<thead><tr><th>실제\\예측</th>";
+
+            classNames.forEach(name => {
+                html += `<th>${name}</th>`;
+            });
+
+            html += "</tr></thead><tbody>";
+
+            confusionMatrix.forEach((row, i) => {
+                html += `<tr><th>${classNames[i]}</th>`;
+                row.forEach((value, j) => {
+                    const isMaxCell = value === Math.max(...row);
+                    html += `<td class="${isMaxCell ? 'highlight' : ''}">${value}</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += "</tbody>";
+            table.innerHTML = html;
+        }
+
+        function renderWrongGallery() {
+            const gallery = document.getElementById("wrong-gallery");
+            gallery.innerHTML = wrongExamples.map(item => {
+                return `
+                    <div class="wrong-card">
+                        <div class="no-image">이미지 없음</div>
+                        <img src="${item.src}" alt="${item.trueLabel} 실제값, ${item.predLabel} 예측값" onerror="this.style.display='none'; this.parentElement.querySelector('.no-image').style.display='flex';" />
+                        <p>${item.trueLabel} → ${item.predLabel}</p>
+                    </div>
+                `;
+            }).join("");
         }
 
         async function init() {
@@ -52,6 +208,8 @@
                     MODEL_URL + "metadata.json"
                 );
                 maxPredictions = model.getTotalClasses();
+                renderConfusionMatrix();
+                renderWrongGallery();
                 setStatus("✨ 로딩 완료! 사진을 업로드해보세요.");
             } catch (error) {
                 console.error("모델 로딩 실패:", error);
@@ -73,7 +231,6 @@
             const imgElement = document.getElementById("image-preview");
             setStatus("🔍 분석 중입니다...");
 
-            // 사진이 다 불러와진 뒤에 분석 (onload를 src보다 먼저 지정)
             imgElement.onload = async function () {
                 try {
                     const prediction = await model.predict(imgElement);
@@ -106,7 +263,7 @@
 
             imgElement.style.display = "block";
             imgElement.src = URL.createObjectURL(file);
-            input.value = ""; // 같은 사진을 다시 올려도 동작하도록 초기화
+            input.value = "";
         }
 
         init();
