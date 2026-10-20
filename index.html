@@ -1,1 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>너는 쌍떡잎이니? 외떡잎이니?</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; }
+        h1 { color: #2c3e50; font-size: 24px; }
+        p { color: #555; }
+        #image-preview { max-width: 300px; max-height: 300px; margin: 20px auto; border-radius: 10px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .upload-btn { background-color: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: inline-block; margin-top: 10px; font-weight: bold; }
+        #label-container { margin-top: 20px; font-size: 18px; font-weight: bold; }
+        .bar-container { width: 100%; max-width: 350px; background-color: #ddd; margin: 5px auto 15px auto; border-radius: 10px; overflow: hidden; }
+        .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.5s ease-in-out; }
+        .unknown-msg { color: #e74c3c; font-size: 20px; margin-top: 15px; font-weight: bold; padding: 10px; border: 2px dashed #e74c3c; border-radius: 8px; max-width: 300px; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body>
+    <h1>🌿 너는 쌍떡잎이니? 외떡잎이니?</h1>
+    <p>잎 사진을 올리면 그물맥/나란히맥을 분석해 종류를 알려줍니다.</p>
+
+    <!-- 사진 업로드 버튼 -->
+    <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="previewAndPredict(event)">
+    <label for="image-upload" class="upload-btn">📷 사진 업로드하기</label>
+
+    <br>
+    <!-- 사진 미리보기 -->
+    <img id="image-preview" src="" alt="미리보기">
+
+    <!-- 결과가 나올 공간 -->
+    <div id="label-container">AI 모델을 불러오는 중입니다... 잠시만 기다려주세요.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/custom-teachablemachine-image.min.js"></script>
+    <script>
+        // ★★★ 여기에 티처블 머신에서 복사한 주소를 붙여넣으세요! (따옴표 안에) ★★★
+        const URL = "https://teachablemachine.withgoogle.com/models/bnqyGwG6h/";
+
+        let model, labelContainer, maxPredictions;
+
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+            labelContainer = document.getElementById("label-container");
+            labelContainer.innerHTML = "✨ 로딩 완료! 사진을 업로드해보세요.";
+        }
+
+        async function previewAndPredict(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const imgElement = document.getElementById("image-preview");
+                imgElement.src = e.target.result;
+                imgElement.style.display = "block";
+                
+                labelContainer.innerHTML = "🔍 분석 중입니다...";
+
+                imgElement.onload = async function() {
+                    const prediction = await model.predict(imgElement);
+                    labelContainer.innerHTML = ""; 
+
+                    let maxProb = 0;
+
+                    for (let i = 0; i < maxPredictions; i++) {
+                        const className = prediction[i].className;
+                        const probability = prediction[i].probability;
+                        const probPercent = (probability * 100).toFixed(1);
+
+                        if (probability > maxProb) maxProb = probability;
+
+                        const resultHtml = `
+                            <div style="text-align: left; max-width: 350px; margin: 0 auto;">
+                                <span>${className}</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar" style="width: ${probPercent}%;">${probPercent}%</div>
+                            </div>
+                        `;
+                        labelContainer.innerHTML += resultHtml;
+                    }
+
+                    // 과제 조건 반영: 70% (0.7) 미만이면 잘 모르겠어요 출력
+                    if (maxProb < 0.7) {
+                        labelContainer.innerHTML += `<div class="unknown-msg">🤔 특징이 모호하여<br>잘 모르겠어요!</div>`;
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        init();
+    </script>
+</body>
+</html>
 
