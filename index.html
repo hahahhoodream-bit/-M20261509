@@ -144,17 +144,14 @@
         // 행 = 실제 클래스, 열 = 예측 클래스
         const classNames = ["쌍떡잎", "외떡잎"];
         const confusionMatrix = [
-            [18, 2],
-            [3, 17]
+            [9, 1],
+            [0, 10]
         ];
 
-        // 오답 사진 경로 예시. 실제 이미지 파일을 넣어주면 화면에 표시됨
-        // 예: ./assets/misclassified/01.png
+        // 틀린 사진은 저장소의 assets/misclassified 폴더에 넣고 경로를 아래처럼 적으면 됨
+        // 실제 검증에서 쌍떡잎 10개 중 1개를 외떡잎으로 잘못 예측했다면 아래처럼 하나만 넣으면 됨
         const wrongExamples = [
-            { trueLabel: "쌍떡잎", predLabel: "외떡잎", src: "./assets/misclassified/01.png" },
-            { trueLabel: "외떡잎", predLabel: "쌍떡잎", src: "./assets/misclassified/02.png" },
-            { trueLabel: "쌍떡잎", predLabel: "외떡잎", src: "./assets/misclassified/03.png" },
-            { trueLabel: "외떡잎", predLabel: "쌍떡잎", src: "./assets/misclassified/04.png" }
+            { trueLabel: "쌍떡잎", predLabel: "외떡잎", src: "./assets/misclassified/wrong_01.png" }
         ];
 
         function setStatus(message) {
@@ -190,7 +187,7 @@
                 return `
                     <div class="wrong-card">
                         <div class="no-image">이미지 없음</div>
-                        <img src="${item.src}" alt="${item.trueLabel} 실제값, ${item.predLabel} 예측값" onerror="this.style.display='none'; this.parentElement.querySelector('.no-image').style.display='flex';" />
+                        <img src="${item.src}" alt="${item.trueLabel} 실제값, ${item.predLabel} 예측값" onerror="this.style.display='none'; this.parentElement.querySelector('.no-image').style.display='flex';">
                         <p>${item.trueLabel} → ${item.predLabel}</p>
                     </div>
                 `;
