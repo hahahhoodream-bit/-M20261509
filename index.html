@@ -12,7 +12,7 @@
         .upload-btn { background-color: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: inline-block; margin-top: 10px; font-weight: bold; }
         #label-container { margin-top: 20px; font-size: 18px; font-weight: bold; }
         .bar-container { width: 100%; max-width: 350px; background-color: #ddd; margin: 5px auto 15px auto; border-radius: 10px; overflow: hidden; }
-        .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.3s ease; }
+        .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.5s ease; }
         .unknown-msg { color: #e74c3c; font-size: 20px; margin-top: 15px; font-weight: bold; padding: 10px; border: 2px dashed #e74c3c; border-radius: 8px; max-width: 300px; margin-left: auto; margin-right: auto; }
     </style>
 </head>
@@ -30,58 +30,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/custom-teachablemachine-image.min.js"></script>
-    <script>
-        const REMOTE_URL = "https://teachablemachine.withgoogle.com/models/bnqyGwG6h/";
-        const LOCAL_URL = "./model/";
 
-        let model, labelContainer, maxPredictions;
+    <script>
+        let model;
+        let labelContainer;
+        let maxPredictions;
 
         function setStatus(message) {
             const container = document.getElementById("label-container");
             if (container) container.innerHTML = message;
         }
 
-        async function checkModelUrl(baseUrl) {
-            const modelUrl = baseUrl + "model.json";
-            const metadataUrl = baseUrl + "metadata.json";
-
-            try {
-                const modelRes = await fetch(modelUrl, { method: 'HEAD' });
-                const metaRes = await fetch(metadataUrl, { method: 'HEAD' });
-                return modelRes.ok && metaRes.ok;
-            } catch (error) {
-                console.warn("모델 URL 검사 실패:", baseUrl, error);
-                return false;
-            }
-        }
-
         async function init() {
             try {
-                let modelBaseUrl = REMOTE_URL;
+                const MODEL_URL = "./model/";
+                model = await tmImage.load(
+                    MODEL_URL + "model.json",
+                    MODEL_URL + "metadata.json"
+                );
 
-                const remoteOk = await checkModelUrl(REMOTE_URL);
-                if (!remoteOk) {
-                    console.warn("원격 모델 로딩 실패, 로컬 모델 시도:", LOCAL_URL);
-                    const localOk = await checkModelUrl(LOCAL_URL);
-                    if (localOk) {
-                        modelBaseUrl = LOCAL_URL;
-                    } else {
-                        setStatus("⚠️ 모델을 불러오지 못했습니다.<br>원격 URL과 로컬 model 폴더를 확인해주세요.");
-                        return;
-                    }
-                }
-
-                const modelURL = modelBaseUrl + "model.json";
-                const metadataURL = modelBaseUrl + "metadata.json";
-
-                console.log("모델 로딩 시작:", modelURL, metadataURL);
-                model = await tmImage.load(modelURL, metadataURL);
                 maxPredictions = model.getTotalClasses();
                 labelContainer = document.getElementById("label-container");
                 labelContainer.innerHTML = "✨ 로딩 완료! 사진을 업로드해보세요.";
             } catch (error) {
                 console.error("모델 로딩 실패:", error);
-                setStatus("❌ AI 모델 로딩에 실패했습니다.<br>브라우저 콘솔을 확인해 주세요.<br>원격 모델 URL 또는 model 폴더 경로를 점검하세요.");
+                setStatus("❌ AI 모델 로딩에 실패했습니다.<br>모델 경로와 파일 구조를 다시 확인해 주세요.");
             }
         }
 
@@ -132,7 +105,7 @@
                         }
                     } catch (error) {
                         console.error("예측 실패:", error);
-                        setStatus("❌ 이미지 분석 중 오류가 발생했습니다.<br>모델이 올바르게 로딩되었는지 확인해 주세요.");
+                        setStatus("❌ 이미지 분석 중 오류가 발생했습니다.");
                     }
                 };
             };
