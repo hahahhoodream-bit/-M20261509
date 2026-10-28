@@ -8,22 +8,18 @@
     :root {
       --bg: #dfe8ee;
       --panel: #f5f7f9;
-      --card: #f9fafb;
       --line: #d7dfe6;
       --text: #1c2b38;
       --muted: #6f7d8b;
-      --muted-2: #8a96a2;
       --primary: #1f6fc7;
       --primary-dark: #0f5eb3;
       --green: #1f9d57;
       --green-soft: #e8f8ee;
       --danger: #d14b4b;
       --danger-soft: #fde8e8;
-      --shadow: rgba(17, 24, 39, 0.05);
     }
 
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       background: var(--bg);
@@ -34,7 +30,7 @@
     .page {
       max-width: 1220px;
       margin: 0 auto;
-      padding: 24px 18px 30px;
+      padding: 24px 18px 28px;
     }
 
     .topbar {
@@ -75,10 +71,10 @@
       font-size: 33px;
       letter-spacing: -0.02em;
       line-height: 1.1;
+      margin: 0;
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      margin: 0;
       font-weight: 800;
     }
 
@@ -98,7 +94,7 @@
     }
 
     .panel {
-      background: rgba(255, 255, 255, 0.38);
+      background: rgba(255,255,255,0.38);
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 16px 18px 18px;
@@ -264,7 +260,7 @@
 
     .bar-row {
       display: grid;
-      grid-template-columns: 90px 1fr 70px;
+      grid-template-columns: 120px 1fr 70px;
       align-items: center;
       gap: 10px;
       min-height: 22px;
@@ -331,7 +327,6 @@
       border: 1px solid var(--line);
       padding: 8px 6px;
       text-align: center;
-      background: rgba(255,255,255,0.05);
       min-width: 50px;
     }
 
@@ -476,38 +471,18 @@
             <thead>
               <tr>
                 <th>실제 \ 예측</th>
-                <th>10,000won</th>
-                <th>20,000won</th>
-                <th>30,000won</th>
-                <th>40,000won</th>
-                <th>50,000won</th>
-                <th>background</th>
+                <th>쌍떡잎식물</th>
+                <th>외떡잎식물</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <th>10,000won</th>
-                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                <th>쌍떡잎식물</th>
+                <td>0</td><td>0</td>
               </tr>
               <tr>
-                <th>20,000won</th>
-                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-              </tr>
-              <tr>
-                <th>30,000won</th>
-                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-              </tr>
-              <tr>
-                <th>40,000won</th>
-                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-              </tr>
-              <tr>
-                <th>50,000won</th>
-                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
-              </tr>
-              <tr>
-                <th>background</th>
-                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                <th>외떡잎식물</th>
+                <td>0</td><td>0</td>
               </tr>
             </tbody>
           </table>
@@ -532,20 +507,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
 
   <script>
-    const DEFAULT_CLASSES = [
-      "10,000won",
-      "20,000won",
-      "30,000won",
-      "40,000won",
-      "50,000won",
-      "background"
-    ];
-
     const MODEL_URL = "./model/";
     const WRONG_LIMIT = 4;
 
+    // 실제 모델 클래스가 "쌍떡잎식물, 외떡잎식물"이라고 가정
+    // 파일명 규칙 예시: 쌍떡잎_01.jpg / 외떡잎_01.jpg
+    // 추가로 그물맥, 나란히맥, dicot, monocot도 인식하도록 허용
+    const ALIASES = {
+      "쌍떡잎": "쌍떡잎식물",
+      "쌍떡잎식물": "쌍떡잎식물",
+      "dicot": "쌍떡잎식물",
+      "그물맥": "쌍떡잎식물",
+      "외떡잎": "외떡잎식물",
+      "외떡잎식물": "외떡잎식물",
+      "monocot": "외떡잎식물",
+      "나란히맥": "외떡잎식물",
+      "background": "background"
+    };
+
     let model = null;
-    let labels = DEFAULT_CLASSES.slice();
+    let labels = ["쌍떡잎식물", "외떡잎식물"];
 
     const fileInput = document.getElementById("file-input");
     const runBtn = document.getElementById("run-btn");
@@ -569,7 +550,8 @@
     };
 
     function normalizeLabel(label) {
-      return String(label || "")
+      if (!label) return "";
+      return String(label)
         .trim()
         .toLowerCase()
         .replace(/[_\-\s]+/g, "")
@@ -582,17 +564,9 @@
 
       if (!firstToken) return null;
 
-      const aliases = {
-        "10000": "10,000won",
-        "20000": "20,000won",
-        "30000": "30,000won",
-        "40000": "40,000won",
-        "50000": "50,000won",
-        background: "background",
-        bg: "background"
-      };
-
-      if (aliases[firstToken]) return aliases[firstToken];
+      if (ALIASES[firstToken]) {
+        return ALIASES[firstToken];
+      }
 
       const normalized = normalizeLabel(firstToken);
       for (const label of labels) {
@@ -613,6 +587,7 @@
 
     function buildMatrix() {
       const counts = labels.map(() => labels.map(() => 0));
+
       state.results.forEach(result => {
         const trueIndex = labels.indexOf(result.actual);
         const predIndex = labels.indexOf(result.predicted);
@@ -644,8 +619,9 @@
     }
 
     function renderBarPanel() {
-      const overall = state.results.length === 0 ? 0 :
-        state.results.filter(r => r.ok).length / state.results.length;
+      const overall = state.results.length === 0
+        ? 0
+        : state.results.filter(r => r.ok).length / state.results.length;
 
       classBars.innerHTML = "";
 
@@ -658,6 +634,7 @@
         const items = state.results.filter(r => normalizeLabel(r.actual) === normalizeLabel(label));
         const correct = items.filter(r => r.ok).length;
         const rate = items.length === 0 ? 0 : correct / items.length;
+
         const row = document.createElement("div");
         row.className = "bar-row";
 
@@ -850,10 +827,10 @@
         }
 
         model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-        labels = model.getClassLabels();
+        const classLabels = model.getClassLabels();
 
-        if (!labels.length) {
-          labels = DEFAULT_CLASSES.slice();
+        if (classLabels && classLabels.length > 0) {
+          labels = classLabels.map(label => String(label));
         }
 
         modelStatus.textContent = "모델 로드 완료 (정상)";
