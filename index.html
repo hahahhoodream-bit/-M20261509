@@ -8,24 +8,12 @@
         body { font-family: 'Pretendard', sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; }
         h1 { color: #2c3e50; font-size: 24px; }
         p { color: #555; }
-        .deployment-link {
-            margin: 12px auto 0;
-            font-size: 14px;
-            color: #2c3e50;
-            word-break: break-all;
-        }
-        .deployment-link a {
-            color: #2563eb;
-            text-decoration: none;
-        }
-        .deployment-link a:hover {
-            text-decoration: underline;
-        }
         #image-preview { max-width: 300px; max-height: 300px; margin: 20px auto; border-radius: 10px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .upload-btn { background-color: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: inline-block; margin-top: 10px; font-weight: 600; }
+        .upload-btn { background-color: #27ae60; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: inline-block; margin-top: 10px; font-weight: bold; }
+        .upload-btn:hover { opacity: 0.9; }
         #label-container { margin-top: 20px; font-size: 18px; font-weight: bold; }
         .bar-container { width: 100%; max-width: 350px; background-color: #ddd; margin: 5px auto 15px auto; border-radius: 10px; overflow: hidden; }
-        .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.3s ease; }
+        .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.5s ease; }
         .unknown-msg { color: #e74c3c; font-size: 20px; margin-top: 15px; font-weight: bold; padding: 10px; border: 2px dashed #e74c3c; border-radius: 8px; max-width: 300px; margin-left: auto; margin-right: auto; }
         .err-detail { font-size: 13px; color: #888; font-weight: normal; }
     </style>
@@ -33,9 +21,6 @@
 <body>
     <h1>🌿 너는 쌍떡잎이니? 외떡잎이니?</h1>
     <p>잎 사진을 올리면 그물맥/나란히맥을 분석해 종류를 알려줍니다.</p>
-    <p class="deployment-link">
-        배포 주소: <a href="https://m20261509-70wkxpjhc-3765.vercel.app/" target="_blank" rel="noopener">https://m20261509-70wkxpjhc-3765.vercel.app/</a>
-    </p>
 
     <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="previewAndPredict(event)">
     <label for="image-upload" class="upload-btn">📷 사진 업로드하기</label>
