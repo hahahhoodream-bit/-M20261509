@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교사용 평가 화면</title>
+  <style>
+    :root {
+      --bg: #f3f6f9;
+      --panel: #ffffff;
+      --line: #dfe5eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2b6cb0;
+      --primary-soft: #eaf2ff;
+      --danger: #e53e3e;
+      --danger-soft: #fde8e8;
+      --success: #dff6e8;
+      --warning: #fff3cd;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 24px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .topbar .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-left: 8px;
+      font-weight: normal;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 20px 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid #cbced6;
+      background: #fff;
+      color: var(--text);
+      padding: 9px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn.secondary {
+      background: #f7f9fb;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .notice {
+      margin-top: 12px;
+      color: #b45309;
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .acc {
+      margin-top: 16px;
+      font-size: 15px;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .acc .big {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .bar-row .name {
+      width: 100px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track {
+      flex: 1;
+      background: #e5e7eb;
+      height: 14px;
+      border-radius: 5px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+
+    .fill.low {
+      background: var(--danger);
+    }
+
+    .rate {
+      width: 110px;
+      text-align: right;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .rate small {
+      color: var(--muted);
+    }
+
+    .matrix-wrap {
+      overflow-x: auto;
+    }
+
+    table.matrix {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 280px;
+      font-size: 14px;
+    }
+
+    .matrix th,
+    .matrix td {
+      border: 1px solid var(--line);
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .matrix th {
+      background: #f4f6f8;
+    }
+
+    .matrix td.ok {
+      background: var(--success);
+    }
+
+    .matrix td.bad {
+      background: var(--danger-soft);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      border: 2px solid var(--danger);
+      border-radius: 8px;
+      background: white;
+      padding: 5px;
+    }
+
+    .card img {
+      display: block;
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      background: #f7f7f7;
+      border-radius: 4px;
+    }
+
+    .card .meta {
+      font-size: 12px;
+      padding-top: 6px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 8px 0;
+    }
+
+    .toggle-btn {
+      display: none;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 14px 16px; }
+      .wrap { padding: 12px 12px 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>교사용 평가 화면 <span class="sub">너는 쌍떡잎이니? 외떡잎이니? · 모델 v1</span></h1>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- 1. 테스트 사진 넣기 -->
+      <section class="panel">
+        <h2>1. 테스트 사진 넣기</h2>
+        <div class="btn-row">
+          <label for="file-input" class="btn primary">사진 선택</label>
+          <input type="file" id="file-input" accept="image/*" multiple style="display: none;" />
+          <button type="button" class="btn secondary" id="reset-btn">초기화</button>
+        </div>
+        <div class="muted" id="progress">모델을 불러오는 중입니다...</div>
+        <div class="muted">파일 이름 규칙: 클래스_번호.jpg (예: can_01.jpg, map_01.jpg)</div>
+        <div class="notice" id="notice"></div>
+        <div class="acc">
+          <span>전체 정확도</span>
+          <span class="big" id="acc-big">-</span>
+          <span class="muted" id="acc-frac"></span>
+        </div>
+      </section>
+
+      <!-- 2. 클래스별 정분류율 -->
+      <section class="panel">
+        <h2>2. 클래스별 정분류율</h2>
+        <div id="class-bars"></div>
+        <button type="button" class="btn secondary" id="csv-btn" style="margin-top: 8px;">CSV 내려받기</button>
+      </section>
+
+      <!-- 3. 혼동행렬 -->
+      <section class="panel">
+        <h2>3. 혼동행렬 (행: 실제, 열: 예측)</h2>
+        <div class="matrix-wrap" id="matrix-wrap"></div>
+      </section>
+
+      <!-- 4. 틀린 사진 -->
+      <section class="panel">
+        <h2 id="wrong-title">4. 틀린 사진</h2>
+        <div id="wrong-gallery"></div>
+        <button type="button" class="btn secondary toggle-btn" id="wrong-toggle">전체 보기</button>
+      </section>
+    </div>
+  </div>
+
+  <!-- Teachable Machine 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+
+  <script>
+    // =====================================================
+    //  설정값
+    // =====================================================
+    const MODEL_URL = "./model/";
+    const WRONG_LIMIT = 4;
+
+    // 파일 이름에서 실제 클래스를 추출할 때의 보정 규칙
+    // 예: can_01.jpg -> can
+    //     map_검증1.png -> map
+    // 모델 클래스 이름과 다르더라도 비교를 위해 정규화해서 처리한다.
+    const ALIASES = {
+      can: "can",
+      map: "map",
+      "그물맥": "그물맥",
+      "나란히맥": "나란히맥"
+    };
+
+    // =====================================================
+    //  상태 관리
+    // =====================================================
+    let model = null;
+    let labels = [];
+    let runId = 0;
+    let chain = Promise.resolve();
+    let state = createState();
+
+    function createState() {
+      return {
+        selected: 0,
+        results: [],
+        skipped: [],
+        errors: [],
+        dup: 0,
+        seen: new Set(),
+        showAll: false
+      };
+    }
+
+    const $ = (id) => document.getElementById(id);
+
+    // =====================================================
+    //  모델 로딩
+    // =====================================================
+    async function initModel() {
+      try {
+        if (typeof tmImage === "undefined") {
+          throw new Error("Teachable Machine 라이브러리를 불러오지 못했습니다.");
+        }
+
+        // 같은 폴더에 있는 model.json, metadata.json을 로드한다.
+        model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+        labels = model.getClassLabels();
+        renderAll();
+      } catch (error) {
+        console.error("모델 로딩 실패:", error);
+        $("progress").textContent = "❌ 모델 로딩에 실패했습니다: " + error.message;
+      }
+    }
+
+    // =====================================================
+    //  유틸 함수
+    // =====================================================
+    function normalizeLabel(label) {
+      if (!label) return "";
+      return String(label)
+        .trim()
+        .toLowerCase()
+        .replace(/[_\-\s]+/g, "")
+        .replace(/[^a-z0-9가-힣]/gi, "");
+    }
+
+    function inferActualLabel(fileName) {
+      const base = fileName.replace(/\.[^.]+$/, "");
+      const firstToken = (base.split("_")[0] || "").trim();
+      if (!firstToken) return null;
+
+      // 파일명 앞부분이 모델 클래스와 같거나, 별칭이 있으면 그대로 사용한다.
+      const norm = normalizeLabel(firstToken);
+      if (ALIASES[firstToken]) return ALIASES[firstToken];
+      if (labels.some(l => normalizeLabel(l) === norm)) {
+        return labels.find(l => normalizeLabel(l) === norm);
+      }
+      return firstToken;
+    }
+
+    function loadImageFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("사진을 불러오지 못했습니다."));
+        img.src = url;
+      });
+    }
+
+    // =====================================================
+    //  사진 선택 처리
+    // =====================================================
+    function onFileSelect(event) {
+      const files = Array.from(event.target.files || []);
+      event.target.value = "";
+
+      if (files.length === 0) return;
+      if (!model) {
+        $("notice").textContent = "모델이 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.";
+        return;
+      }
+
+      const freshFiles = [];
+      files.forEach(file => {
+        const key = file.name + "|" + file.size + "|" + file.lastModified;
+        if (state.seen.has(key)) {
+          state.dup++;
+        } else {
+          state.seen.add(key);
+          freshFiles.push(file);
+        }
+      });
+
+      state.selected += freshFiles.length;
+      renderAll();
+      chain = chain.then(() => processFiles(freshFiles, runId));
+    }
+
+    async function processFiles(files, myRun) {
+      for (const file of files) {
+        if (myRun !== runId) return;
+
+        const actualLabel = inferActualLabel(file.name);
+        if (!actualLabel) {
+          state.skipped.push(file.name);
+          renderAll();
+          continue;
+        }
+
+        let objectUrl = null;
+
+        try {
+          objectUrl = URL.createObjectURL(file);
+          const img = await loadImageFromUrl(objectUrl);
+          const prediction = await model.predict(img);
+
+          if (myRun !== runId) {
+            URL.revokeObjectURL(objectUrl);
+            return;
+          }
+
+          let bestIndex = 0;
+          for (let i = 1; i < prediction.length; i++) {
+            if (prediction[i].probability > prediction[bestIndex].probability) {
+              bestIndex = i;
+            }
+          }
+
+          const best = prediction[bestIndex];
+          const probs = {};
+          for (const item of prediction) {
+            probs[item.className] = item.probability;
+          }
+
+          const result = {
+            file: file.name,
+            actual: actualLabel,
+            predicted: best.className,
+            probability: best.probability,
+            probs,
+            ok: normalizeLabel(actualLabel) === normalizeLabel(best.className),
+            objectUrl: objectUrl
+          };
+
+          // 정답인 사진은 상세 미리보기 없이 처리해도 되므로 URL을 해제한다.
+          if (result.ok) {
+            URL.revokeObjectURL(objectUrl);
+            result.objectUrl = null;
+          }
+
+          state.results.push(result);
+        } catch (error) {
+          console.error(file.name, error);
+          state.errors.push(file.name);
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+        }
+
+        renderAll();
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+
+    function resetAll() {
+      runId++;
+      state.results.forEach(r => {
+        if (r.objectUrl) URL.revokeObjectURL(r.objectUrl);
+      });
+      state = createState();
+      chain = Promise.resolve();
+      renderAll();
+    }
+
+    // =====================================================
+    //  화면 렌더링
+    // =====================================================
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function renderAll() {
+      renderSummary();
+      renderBars();
+      renderMatrix();
+      renderWrongGallery();
+    }
+
+    function renderSummary() {
+      const done = state.results.length;
+      const excluded = state.skipped.length + state.errors.length;
+      const busy = done + excluded < state.selected;
+
+      let text;
+      if (!model) {
+        text = "모델을 불러오는 중입니다...";
+      } else if (state.selected === 0) {
+        text = "사진을 선택하면 자동으로 판정합니다.";
+      } else {
+        text = "선택한 사진 " + state.selected + "장 · 판정 완료 " + done + "장";
+        if (excluded > 0) text += " · 제외 " + excluded + "장";
+        if (busy) text += " · 판정 중...";
+      }
+      $("progress").textContent = text;
+
+      const notes = [];
+      if (state.skipped.length > 0) {
+        notes.push("⚠ 파일 이름에서 실제 클래스를 찾지 못해 제외한 사진 " + state.skipped.length + "장: " +
+          state.skipped.slice(0, 5).join(", ") + (state.skipped.length > 5 ? " 외" : ""));
+      }
+      if (state.errors.length > 0) {
+        notes.push("⚠ 열 수 없어 제외한 사진 " + state.errors.length + "장: " + state.errors.slice(0, 5).join(", "));
+      }
+      if (state.dup > 0) {
+        notes.push("이미 넣은 사진 " + state.dup + "장은 건너뛰었습니다.");
+      }
+
+      $("notice").innerHTML = "";
+      notes.forEach(msg => {
+        $("notice").appendChild(el("div", "", msg));
+      });
+
+      if (done === 0) {
+        $("acc-big").textContent = "-";
+        $("acc-frac").textContent = "";
+      } else {
+        const correct = state.results.filter(r => r.ok).length;
+        const rate = (correct / done * 100).toFixed(1);
+        $("acc-big").textContent = rate + "%";
+        $("acc-frac").textContent = "(" + correct + "/" + done + ")";
+      }
+    }
+
+    function getOverallAccuracy() {
+      const results = state.results;
+      if (results.length === 0) return 0;
+      return results.filter(r => r.ok).length / results.length;
+    }
+
+    function renderBars() {
+      const box = $("class-bars");
+      box.innerHTML = "";
+      if (!labels.length) return;
+
+      const overall = getOverallAccuracy();
+
+      labels.forEach(label => {
+        const items = state.results.filter(r => normalizeLabel(r.actual) === normalizeLabel(label));
+        const correct = items.filter(r => r.ok).length;
+        const rate = items.length === 0 ? null : correct / items.length;
+
+        const row = el("div", "bar-row");
+        row.appendChild(el("div", "name", label));
+
+        const track = el("div", "track");
+        const fill = el("div", "fill" + (rate !== null && rate < overall ? " low" : ""));
+        fill.style.width = rate === null ? "0%" : (rate * 100).toFixed(1) + "%";
+        track.appendChild(fill);
+        row.appendChild(track);
+
+        const rateBox = el("div", "rate");
+        rateBox.textContent = rate === null ? "-" : Math.round(rate * 100) + "% ";
+        if (rate !== null) {
+          rateBox.appendChild(el("small", "", "(" + correct + "/" + items.length + ")"));
+        }
+
+        row.appendChild(rateBox);
+        box.appendChild(row);
+      });
+    }
+
+    function renderMatrix() {
+      const wrap = $("matrix-wrap");
+      wrap.innerHTML = "";
+      if (!labels.length) return;
+
+      const counts = labels.map(() => labels.map(() => 0));
+      state.results.forEach(result => {
+        const trueIndex = labels.findIndex(l => normalizeLabel(l) === normalizeLabel(result.actual));
+        const predIndex = labels.findIndex(l => normalizeLabel(l) === normalizeLabel(result.predicted));
+        if (trueIndex !== -1 && predIndex !== -1) {
+          counts[trueIndex][predIndex]++;
+        }
+      });
+
+      const table = el("table", "matrix");
+      const headRow = el("tr");
+      headRow.appendChild(el("th", "", ""));
+      labels.forEach(label => headRow.appendChild(el("th", "", label)));
+      table.appendChild(headRow);
+
+      labels.forEach((rowLabel, rowIndex) => {
+        const tr = el("tr");
+        tr.appendChild(el("th", "", rowLabel));
+        labels.forEach((colLabel, colIndex) => {
+          const value = counts[rowIndex][colIndex];
+          const td = el("td", rowIndex === colIndex ? "ok" : (value > 0 ? "bad" : ""), String(value));
+          tr.appendChild(td);
+        });
+        table.appendChild(tr);
+      });
+
+      wrap.appendChild(table);
+    }
+
+    function renderWrongGallery() {
+      const gallery = $("wrong-gallery");
+      gallery.innerHTML = "";
+
+      const wrong = state.results.filter(r => !r.ok).sort((a, b) => b.probability - a.probability);
+      const show = state.showAll ? wrong : wrong.slice(0, WRONG_LIMIT);
+
+      $("wrong-title").textContent = wrong.length === 0 ? "4. 틀린 사진" : "4. 틀린 사진 (" + wrong.length + "장 중 " + show.length + "장 표시)";
+
+      const toggle = $("wrong-toggle");
+      if (wrong.length > WRONG_LIMIT) {
+        toggle.style.display = "inline-block";
+        toggle.textContent = state.showAll ? "접기" : "전체 " + wrong.length + "장 보기";
+      } else {
+        toggle.style.display = "none";
+      }
+
+      if (state.results.length === 0) {
+        gallery.appendChild(el("div", "empty", "사진을 넣으면 틀린 사진이 여기에 표시됩니다."));
+        return;
+      }
+
+      if (wrong.length === 0) {
+        gallery.appendChild(el("div", "empty", "틀린 사진이 없습니다. 🎉"));
+        return;
+      }
+
+      const grid = el("div", "gallery");
+      show.forEach(result => {
+        const card = el("div", "card");
+        const img = el("img");
+        img.src = result.objectUrl || URL.createObjectURL(new Blob());
+        if (!result.objectUrl) {
+          // 정답은 objectUrl이 null로 들어가므로, 여기서는 정답 데이터를 렌더링하지 않음.
+          // 틀린 사진만 이 함수에서 나오므로 실제로는 objectUrl이 있어야 함.
+        }
+        card.appendChild(img);
+
+        const meta = el("div", "meta");
+        meta.innerHTML = "<div>파일: " + result.file + "</div>" +
+          "<div>실제: " + result.actual + " → 예측: " + result.predicted + "</div>" +
+          "<div>확률: " + (result.probability * 100).toFixed(1) + "%</div>";
+        card.appendChild(meta);
+        grid.appendChild(card);
+      });
+
+      gallery.appendChild(grid);
+    }
+
+    // =====================================================
+    //  CSV 내보내기
+    // =====================================================
+    function csvCell(value) {
+      const text = String(value === undefined || value === null ? "" : value);
+      return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    }
+
+    function buildCsv() {
+      const rows = [["파일명", "실제", "예측", "정오", "예측확률"].concat(labels.map(l => l + " 확률"))];
+
+      state.results.forEach(result => {
+        const row = [
+          result.file,
+          result.actual,
+          result.predicted,
+          result.ok ? "정답" : "오답",
+          (result.probability * 100).toFixed(1) + "%"
+        ];
+        labels.forEach(label => row.push((result.probs[label] || 0).toFixed(4)));
+        rows.push(row);
+      });
+
+      state.skipped.forEach(name => {
+        rows.push([name, "", "", "제외(실제 클래스 불명)", ""]);
+      });
+
+      return "\ufeff" + rows.map(row => row.map(csvCell).join(",")).join("\r\n");
+    }
+
+    function downloadCsv() {
+      if (state.results.length === 0) {
+        $("notice").textContent = "내려받을 결과가 없어요. 먼저 사진을 선택해 주세요.";
+        return;
+      }
+
+      const blob = new Blob([buildCsv()], { type: "text/csv;charset=utf-8" });
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const fileName = "교사용_평가결과_" + now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + "_" +
+        pad(now.getHours()) + pad(now.getMinutes()) + ".csv";
+
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    // =====================================================
+    //  이벤트 연결
+    // =====================================================
+    $("file-input").addEventListener("change", onFileSelect);
+    $("reset-btn").addEventListener("click", resetAll);
+    $("csv-btn").addEventListener("click", downloadCsv);
+    $("wrong-toggle").addEventListener("click", () => {
+      state.showAll = !state.showAll;
+      renderWrongGallery();
+    });
+
+    renderAll();
+    initModel();
+  </script>
+</body>
+</html>
