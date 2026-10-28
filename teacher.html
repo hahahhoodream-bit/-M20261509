@@ -259,7 +259,7 @@
           <button type="button" class="btn secondary" id="reset-btn">초기화</button>
         </div>
         <div class="muted" id="progress">모델을 불러오는 중입니다...</div>
-        <div class="muted">파일 이름 규칙: 클래스_번호.jpg (예: can_01.jpg, map_01.jpg)</div>
+        <div class="muted">파일 이름 규칙: 클래스_번호.jpg (예: 그물맥_01.jpg, 나란히맥_01.jpg)</div>
         <div class="notice" id="notice"></div>
         <div class="acc">
           <span>전체 정확도</span>
@@ -298,11 +298,14 @@
     const MODEL_URL = "./model/";
     const WRONG_LIMIT = 4;
 
+    // [수정 2] 파일 이름 앞부분 → 모델의 클래스 이름(쌍떡잎식물 / 외떡잎식물)
     const ALIASES = {
-      can: "can",
-      map: "map",
-      "그물맥": "그물맥",
-      "나란히맥": "나란히맥"
+      "그물맥": "쌍떡잎식물",
+      "쌍떡잎": "쌍떡잎식물",
+      "쌍떡잎식물": "쌍떡잎식물",
+      "나란히맥": "외떡잎식물",
+      "외떡잎": "외떡잎식물",
+      "외떡잎식물": "외떡잎식물"
     };
 
     let model = null;
@@ -323,7 +326,8 @@
       };
     }
 
-    const $ = (id) => document.getElementById(id);
+    // [수정 1] 아래 코드들은 $("#progress") 처럼 '#'을 붙여 부르므로 querySelector 를 써야 합니다.
+    const $ = (selector) => document.querySelector(selector);
 
     async function initModel() {
       try {
@@ -362,7 +366,8 @@
         if (normalizeLabel(label) === norm) return label;
       }
 
-      return firstToken;
+      // [수정 3] 모델 클래스와 맞지 않는 이름은 '틀린 사진'이 아니라 '제외'로 처리
+      return null;
     }
 
     function loadImageFromUrl(url) {
@@ -491,7 +496,7 @@
       if (!model) {
         text = "모델을 불러오는 중입니다...";
       } else if (state.selected === 0) {
-        text = "사진을 선택하면 자동으로 판정합니다.";
+        text = "✓ 모델 로드 완료 · 사진을 선택하면 자동으로 판정합니다.";   // [수정 4] 로딩 완료 표시
       } else {
         text = "선택한 사진 " + state.selected + "장 · 판정 완료 " + done + "장";
         if (excluded > 0) text += " · 제외 " + excluded + "장";
@@ -643,10 +648,9 @@
         img.alt = result.file;
 
         const meta = el("div", "meta");
-        meta.innerHTML =
-          "<div>파일: " + result.file + "</div>" +
-          "<div>실제: " + result.actual + " → 예측: " + result.predicted + "</div>" +
-          "<div>확률: " + (result.probability * 100).toFixed(1) + "%</div>";
+        meta.appendChild(el("div", "", "파일: " + result.file));
+        meta.appendChild(el("div", "", "실제: " + result.actual + " → 예측: " + result.predicted));
+        meta.appendChild(el("div", "", "확률: " + (result.probability * 100).toFixed(1) + "%"));
 
         card.appendChild(img);
         card.appendChild(meta);
