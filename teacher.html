@@ -510,10 +510,10 @@
     const MODEL_URL = "./model/";
     const WRONG_LIMIT = 4;
 
-    // 실제 모델 클래스가 "쌍떡잎식물, 외떡잎식물"이라고 가정
-    // 파일명 규칙 예시: 쌍떡잎_01.jpg / 외떡잎_01.jpg
-    // 추가로 그물맥, 나란히맥, dicot, monocot도 인식하도록 허용
-    const ALIASES = {
+    // 파일명 규칙: "실제클래스_01.jpg" 또는 "can_01.jpg"
+    // 파일명 앞부분을 실제 클래스 라벨로 사용하고,
+    // 추가로 자주 쓰는 별칭은 아래 객체에 선언하면 됩니다.
+    const FILE_NAME_ALIASES = {
       "쌍떡잎": "쌍떡잎식물",
       "쌍떡잎식물": "쌍떡잎식물",
       "dicot": "쌍떡잎식물",
@@ -558,22 +558,32 @@
         .replace(/[^a-z0-9가-힣]/gi, "");
     }
 
+    function resolveLabelName(rawLabel) {
+      if (!rawLabel) return null;
+
+      const source = String(rawLabel).trim();
+      const normalized = normalizeLabel(source);
+
+      if (FILE_NAME_ALIASES[source]) {
+        return FILE_NAME_ALIASES[source];
+      }
+
+      if (FILE_NAME_ALIASES[normalized]) {
+        return FILE_NAME_ALIASES[normalized];
+      }
+
+      const exactMatch = labels.find(label => normalizeLabel(label) === normalized);
+      if (exactMatch) return exactMatch;
+
+      return source;
+    }
+
     function inferActualLabel(fileName) {
       const base = fileName.replace(/\.[^.]+$/, "");
-      const firstToken = (base.split("_")[0] || "").trim();
+      const firstToken = (base.split(/[_\-\s]+/)[0] || "").trim();
 
       if (!firstToken) return null;
-
-      if (ALIASES[firstToken]) {
-        return ALIASES[firstToken];
-      }
-
-      const normalized = normalizeLabel(firstToken);
-      for (const label of labels) {
-        if (normalizeLabel(label) === normalized) return label;
-      }
-
-      return firstToken;
+      return resolveLabelName(firstToken);
     }
 
     function escapeHtml(value) {
