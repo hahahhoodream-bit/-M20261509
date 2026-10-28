@@ -1,40 +1,436 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>교사용 페이지</title>
-  <style>
-    body {
-      font-family: 'Pretendard', sans-serif;
-      margin: 0;
-      padding: 32px 20px;
-      background: #f4f7f6;
-      color: #2c3e50;
-    }
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 28px;
-    }
-    p {
-      line-height: 1.6;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교사용 평가 화면 · 너는 쌍떡잎이니? 외떡잎이니?</title>
+    <style>
+        :root { --blue: #2b6cb0; --red: #e53e3e; --green: #e3f4ea; --pink: #fde8e8; --line: #dfe3e8; --muted: #6b7280; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Pretendard', 'Noto Sans KR', sans-serif; background: #f1f3f5; color: #1f2937; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--line); padding: 14px 24px; }
+        .topbar h1 { font-size: 20px; margin: 0; }
+        .topbar .sub { font-size: 13px; color: var(--muted); font-weight: normal; margin-left: 8px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 16px; padding: 16px 24px; max-width: 1200px; margin: 0 auto; }
+        .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+        .panel h2 { font-size: 16px; margin: 0 0 14px 0; }
+        .muted { color: var(--muted); font-size: 13px; line-height: 1.6; }
+        .btnrow { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .btn { display: inline-block; border: 1px solid #c4c9d0; background: #fff; color: #1f2937; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; font-family: inherit; }
+        .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .acc { margin-top: 14px; font-size: 15px; }
+        .acc .big { font-size: 34px; font-weight: bold; color: var(--blue); margin: 0 6px; }
+        .notice { font-size: 13px; color: #b45309; margin-top: 8px; line-height: 1.5; word-break: break-all; }
+
+        .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+        .bar-row .name { width: 90px; flex-shrink: 0; }
+        .bar-row .track { flex: 1; background: #e5e7eb; height: 14px; border-radius: 4px; overflow: hidden; }
+        .bar-row .fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.3s ease; }
+        .bar-row .fill.low { background: var(--red); }
+        .bar-row .rate { width: 110px; flex-shrink: 0; text-align: right; }
+        .bar-row .rate small { color: var(--muted); }
+
+        .matrix { border-collapse: collapse; width: 100%; font-size: 14px; }
+        .matrix th, .matrix td { border: 1px solid var(--line); padding: 9px 8px; text-align: center; }
+        .matrix th { background: #f3f4f6; }
+        .matrix td.ok { background: var(--green); }
+        .matrix td.bad { background: var(--pink); }
+
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .card { border: 2px solid var(--red); border-radius: 6px; padding: 4px; background: #fff; text-align: center; }
+        .card img { width: 100%; height: 110px; object-fit: contain; background: #f3f4f6; display: block; border-radius: 3px; }
+        .card .cap { font-size: 12px; margin-top: 5px; line-height: 1.45; word-break: break-all; }
+        .card .cap .file { color: var(--muted); }
+        .toggle { margin-top: 12px; }
+        .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>교사용 페이지</h1>
-    <p>여기에 학생용/교사용 코드를 넣으면 됩니다.</p>
-    <p>이 파일은 루트 폴더에 있어야 하며, model 폴더도 루트에 있어야 합니다.</p>
-    <p>예: ./model/model.json, ./model/metadata.json</p>
-  </div>
+    <div class="topbar">
+        <h1>교사용 평가 화면 <span class="sub">너는 쌍떡잎이니? 외떡잎이니? · 모델 v1</span></h1>
+    </div>
+
+    <div class="grid">
+        <!-- 1. 테스트 사진 넣기 -->
+        <section class="panel">
+            <h2>1. 테스트 사진 넣기</h2>
+            <div class="btnrow">
+                <label for="file-input" class="btn primary">사진 선택</label>
+                <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
+                <button type="button" class="btn" id="reset-btn">초기화</button>
+            </div>
+            <div class="muted" id="progress">모델을 불러오는 중입니다...</div>
+            <div class="muted">파일 이름 규칙: 클래스_번호.jpg (예: 그물맥_01.jpg, 나란히맥_01.jpg)</div>
+            <div class="notice" id="notice"></div>
+            <div class="acc">전체 정확도 <span class="big" id="acc-big">-</span><span class="muted" id="acc-frac"></span></div>
+        </section>
+
+        <!-- 2. 클래스별 정분류율 -->
+        <section class="panel">
+            <h2>2. 클래스별 정분류율</h2>
+            <div id="class-bars"></div>
+            <button type="button" class="btn" id="csv-btn">CSV 내려받기</button>
+        </section>
+
+        <!-- 3. 혼동행렬 -->
+        <section class="panel">
+            <h2>3. 혼동행렬 (행: 실제, 열: 예측)</h2>
+            <div id="matrix-wrap"></div>
+        </section>
+
+        <!-- 4. 틀린 사진 -->
+        <section class="panel">
+            <h2 id="wrong-title">4. 틀린 사진</h2>
+            <div id="wrong-gallery"></div>
+            <button type="button" class="btn toggle" id="wrong-toggle" style="display: none;"></button>
+        </section>
+    </div>
+
+    <!-- Teachable Machine 공식 조합: tfjs 1.3.1 + @teachablemachine/image -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+
+    <script>
+        // =====================================================
+        //  설정 (필요하면 여기만 고치세요)
+        // =====================================================
+        const MODEL_URL = "./model/";
+        const WRONG_LIMIT = 4;              // 틀린 사진을 처음에 몇 장까지 보여 줄지
+
+        // 파일 이름 맨 앞부분(첫 '_' 앞)을 모델의 클래스 이름으로 바꾸는 표입니다.
+        //  예) 그물맥_검증용_1.jpg → '그물맥' → 쌍떡잎식물
+        // 모델 클래스 이름(쌍떡잎식물, 외떡잎식물)을 그대로 파일 이름 앞에 써도 됩니다.
+        const ALIASES = {
+            "그물맥": "쌍떡잎식물", "쌍떡잎": "쌍떡잎식물", "쌍떡잎식물": "쌍떡잎식물", "dicot": "쌍떡잎식물",
+            "나란히맥": "외떡잎식물", "외떡잎": "외떡잎식물", "외떡잎식물": "외떡잎식물", "monocot": "외떡잎식물"
+        };
+
+        // =====================================================
+        //  상태
+        // =====================================================
+        let model = null;
+        let labels = [];
+        let runId = 0;                       // 초기화할 때마다 올라가며, 진행 중이던 작업을 멈춤
+        let chain = Promise.resolve();       // 사진 묶음을 차례대로 처리
+        let state = newState();
+
+        function newState() {
+            return { selected: 0, results: [], skipped: [], errors: [], dup: 0, seen: new Set(), showAll: false };
+        }
+        const $ = (id) => document.getElementById(id);
+
+        // =====================================================
+        //  모델 불러오기
+        // =====================================================
+        async function init() {
+            try {
+                if (typeof tmImage === "undefined") {
+                    throw new Error("Teachable Machine 라이브러리를 불러오지 못했습니다. (인터넷 연결 확인)");
+                }
+                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+                labels = model.getClassLabels();
+                renderAll();
+            } catch (error) {
+                console.error("모델 로딩 실패:", error);
+                $("progress").textContent = "❌ 모델 로딩에 실패했습니다: " + error.message;
+            }
+        }
+
+        // =====================================================
+        //  사진 선택 → 판정
+        // =====================================================
+        function truthFromName(fileName) {
+            const base = fileName.replace(/\.[^.]+$/, "");
+            const first = (base.match(/^[^_\-\s]+/) || [""])[0].replace(/\d+$/, "");
+            if (ALIASES[first]) return ALIASES[first];
+            return labels.indexOf(first) !== -1 ? first : null;
+        }
+
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error("사진을 열 수 없습니다"));
+                img.src = url;
+            });
+        }
+
+        function onPick(event) {
+            const input = event.target;
+            const files = Array.from(input.files || []);
+            input.value = "";                       // 같은 사진을 다시 골라도 동작하도록
+            if (files.length === 0) return;
+            if (!model) {
+                $("notice").textContent = "모델이 아직 준비되지 않았어요. 잠시 후 다시 선택해 주세요.";
+                return;
+            }
+            const st = state;
+            const myRun = runId;
+            const fresh = [];
+            files.sort((a, b) => a.name.localeCompare(b.name, "ko", { numeric: true })).forEach(f => {
+                const key = f.name + "|" + f.size + "|" + f.lastModified;
+                if (st.seen.has(key)) { st.dup++; }
+                else { st.seen.add(key); fresh.push(f); }
+            });
+            st.selected += fresh.length;
+            renderAll();
+            chain = chain.then(() => processFiles(fresh, st, myRun));
+        }
+
+        async function processFiles(files, st, myRun) {
+            for (const file of files) {
+                if (myRun !== runId) return;
+                const truth = truthFromName(file.name);
+                if (!truth) {
+                    st.skipped.push(file.name);
+                    renderAll();
+                    continue;
+                }
+                let url = null;
+                try {
+                    url = URL.createObjectURL(file);
+                    const img = await loadImage(url);
+                    const prediction = await model.predict(img);
+                    if (myRun !== runId) { URL.revokeObjectURL(url); return; }
+
+                    const probs = {};
+                    let best = 0;
+                    for (let i = 0; i < prediction.length; i++) {
+                        probs[prediction[i].className] = prediction[i].probability;
+                        if (prediction[i].probability > prediction[best].probability) best = i;
+                    }
+                    const result = {
+                        file: file.name,
+                        truth: truth,
+                        pred: prediction[best].className,
+                        prob: prediction[best].probability,
+                        probs: probs,
+                        ok: truth === prediction[best].className,
+                        url: url
+                    };
+                    if (result.ok) { URL.revokeObjectURL(url); result.url = null; }   // 맞힌 사진은 미리보기가 필요 없음
+                    st.results.push(result);
+                } catch (e) {
+                    console.error(file.name, e);
+                    st.errors.push(file.name);
+                    if (url) URL.revokeObjectURL(url);
+                }
+                renderAll();
+                await new Promise(r => setTimeout(r, 0));   // 화면이 멈추지 않도록 잠깐 쉼
+            }
+        }
+
+        function resetAll() {
+            runId++;
+            state.results.forEach(r => { if (r.url) URL.revokeObjectURL(r.url); });
+            state = newState();
+            chain = Promise.resolve();
+            renderAll();
+        }
+
+        // =====================================================
+        //  화면 그리기
+        // =====================================================
+        function el(tag, className, text) {
+            const e = document.createElement(tag);
+            if (className) e.className = className;
+            if (text !== undefined) e.textContent = text;
+            return e;
+        }
+
+        function renderAll() {
+            renderSummary();
+            renderBars();
+            renderMatrix();
+            renderWrong();
+        }
+
+        function renderSummary() {
+            const st = state;
+            const done = st.results.length;
+            const excluded = st.skipped.length + st.errors.length;
+            const busy = (done + excluded) < st.selected;
+
+            let text;
+            if (!model) {
+                text = "모델을 불러오는 중입니다...";
+            } else if (st.selected === 0) {
+                text = "사진을 선택하면 자동으로 판정합니다.";
+            } else {
+                text = "선택한 사진 " + st.selected + "장 · 판정 완료 " + done + "장";
+                if (excluded > 0) text += " · 제외 " + excluded + "장";
+                if (busy) text += " · 판정 중...";
+            }
+            $("progress").textContent = text;
+
+            const notes = [];
+            if (st.skipped.length > 0) {
+                notes.push("⚠ 파일 이름에서 정답(클래스)을 알 수 없어 제외한 사진 " + st.skipped.length + "장: " +
+                    st.skipped.slice(0, 5).join(", ") + (st.skipped.length > 5 ? " 외" : ""));
+            }
+            if (st.errors.length > 0) {
+                notes.push("⚠ 열 수 없어 제외한 사진 " + st.errors.length + "장: " + st.errors.slice(0, 5).join(", "));
+            }
+            if (st.dup > 0) notes.push("이미 넣은 사진 " + st.dup + "장은 건너뛰었어요.");
+            $("notice").innerHTML = "";
+            notes.forEach(n => $("notice").appendChild(el("div", "", n)));
+
+            if (done === 0) {
+                $("acc-big").textContent = "-";
+                $("acc-frac").textContent = "";
+            } else {
+                const correct = st.results.filter(r => r.ok).length;
+                $("acc-big").textContent = (correct / done * 100).toFixed(1) + "%";
+                $("acc-frac").textContent = "(" + correct + "/" + done + ")";
+            }
+        }
+
+        function overallRate() {
+            const r = state.results;
+            return r.length === 0 ? 0 : r.filter(x => x.ok).length / r.length;
+        }
+
+        function renderBars() {
+            const box = $("class-bars");
+            box.innerHTML = "";
+            if (labels.length === 0) return;
+            const overall = overallRate();
+            labels.forEach(label => {
+                const items = state.results.filter(r => r.truth === label);
+                const correct = items.filter(r => r.ok).length;
+                const rate = items.length === 0 ? null : correct / items.length;
+
+                const row = el("div", "bar-row");
+                row.appendChild(el("div", "name", label));
+                const track = el("div", "track");
+                const fill = el("div", "fill" + (rate !== null && rate < overall ? " low" : ""));
+                fill.style.width = rate === null ? "0%" : (rate * 100).toFixed(1) + "%";
+                track.appendChild(fill);
+                row.appendChild(track);
+                const rateBox = el("div", "rate", rate === null ? "-" : Math.round(rate * 100) + "% ");
+                if (rate !== null) rateBox.appendChild(el("small", "", "(" + correct + "/" + items.length + ")"));
+                row.appendChild(rateBox);
+                box.appendChild(row);
+            });
+        }
+
+        function renderMatrix() {
+            const wrap = $("matrix-wrap");
+            wrap.innerHTML = "";
+            if (labels.length === 0) return;
+
+            const counts = labels.map(() => labels.map(() => 0));
+            state.results.forEach(r => {
+                counts[labels.indexOf(r.truth)][labels.indexOf(r.pred)]++;
+            });
+
+            const table = el("table", "matrix");
+            const head = el("tr");
+            head.appendChild(el("th", "", ""));
+            labels.forEach(l => head.appendChild(el("th", "", l)));
+            table.appendChild(head);
+
+            labels.forEach((rowLabel, i) => {
+                const tr = el("tr");
+                tr.appendChild(el("th", "", rowLabel));
+                labels.forEach((colLabel, j) => {
+                    const n = counts[i][j];
+                    tr.appendChild(el("td", i === j ? "ok" : (n > 0 ? "bad" : ""), String(n)));
+                });
+                table.appendChild(tr);
+            });
+            wrap.appendChild(table);
+        }
+
+        function renderWrong() {
+            const st = state;
+            const wrong = st.results.filter(r => !r.ok).sort((a, b) => b.prob - a.prob);   // 확신하고 틀린 사진부터
+            const shown = st.showAll ? wrong : wrong.slice(0, WRONG_LIMIT);
+
+            $("wrong-title").textContent = wrong.length === 0
+                ? "4. 틀린 사진"
+                : "4. 틀린 사진 (" + wrong.length + "장 중 " + shown.length + "장 표시)";
+
+            const gallery = $("wrong-gallery");
+            gallery.innerHTML = "";
+            if (st.results.length === 0) {
+                gallery.appendChild(el("div", "empty", "사진을 넣으면 틀린 사진이 여기에 모입니다."));
+            } else if (wrong.length === 0) {
+                gallery.appendChild(el("div", "empty", "틀린 사진이 없습니다. 🎉"));
+            } else {
+                const grid = el("div", "gallery");
+                shown.forEach(r => {
+                    const card = el("div", "card");
+                    const img = el("img");
+                    img.src = r.url; img.alt = r.file;
+                    card.appendChild(img);
+                    const cap = el("div", "cap");
+                    cap.appendChild(el("div", "file", r.file));
+                    cap.appendChild(el("div", "", "실제 " + r.truth + " → 예측 " + r.pred));
+                    cap.appendChild(el("div", "", "예측 확률 " + r.prob.toFixed(2)));
+                    card.appendChild(cap);
+                    grid.appendChild(card);
+                });
+                gallery.appendChild(grid);
+            }
+
+            const toggle = $("wrong-toggle");
+            if (wrong.length > WRONG_LIMIT) {
+                toggle.style.display = "inline-block";
+                toggle.textContent = st.showAll ? "접기" : "전체 " + wrong.length + "장 보기";
+            } else {
+                toggle.style.display = "none";
+            }
+        }
+
+        // =====================================================
+        //  CSV 내려받기
+        // =====================================================
+        function csvCell(v) {
+            const s = String(v === undefined || v === null ? "" : v);
+            return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }
+
+        function buildCsv() {
+            const rows = [["파일명", "실제", "예측", "정오", "예측 확률"].concat(labels.map(l => l + " 확률"))];
+            state.results.forEach(r => {
+                rows.push([r.file, r.truth, r.pred, r.ok ? "정답" : "오답", r.prob.toFixed(4)]
+                    .concat(labels.map(l => (r.probs[l] || 0).toFixed(4))));
+            });
+            state.skipped.forEach(name => rows.push([name, "", "", "제외(정답 이름 불명)", ""]));
+            return "\ufeff" + rows.map(r => r.map(csvCell).join(",")).join("\r\n");   // \ufeff: 엑셀에서 한글이 깨지지 않게
+        }
+
+        function downloadCsv() {
+            if (state.results.length === 0) {
+                $("notice").textContent = "내려받을 결과가 없어요. 먼저 사진을 선택해 주세요.";
+                return;
+            }
+            const blob = new Blob([buildCsv()], { type: "text/csv;charset=utf-8" });
+            const d = new Date();
+            const pad = (n) => String(n).padStart(2, "0");
+            const name = "교사용_평가결과_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) +
+                "_" + pad(d.getHours()) + pad(d.getMinutes()) + ".csv";
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        // =====================================================
+        //  연결
+        // =====================================================
+        $("file-input").addEventListener("change", onPick);
+        $("reset-btn").addEventListener("click", resetAll);
+        $("csv-btn").addEventListener("click", downloadCsv);
+        $("wrong-toggle").addEventListener("click", () => { state.showAll = !state.showAll; renderWrong(); });
+
+        renderAll();
+        init();
+    </script>
 </body>
 </html>
