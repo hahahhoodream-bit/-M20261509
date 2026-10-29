@@ -78,14 +78,6 @@
       font-weight: 800;
     }
 
-    .subtitle {
-      margin: 4px 0 0;
-      text-align: center;
-      color: #596b7b;
-      font-size: 14px;
-      letter-spacing: -0.01em;
-    }
-
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -454,8 +446,6 @@
       <h1 class="brand">너는 쌍떡잎이니? 외떡잎이니?</h1>
     </div>
 
-    <div class="subtitle">중간과제 제출용: 모델 검증, 혼동행렬, 클래스별 정분류율 및 오답 이미지 시각화</div>
-
     <div class="grid">
       <section class="panel">
         <h3>1. 테스트 사진 넣기</h3>
@@ -534,9 +524,6 @@
     const MODEL_URL = "./model/";
     const WRONG_LIMIT = 4;
 
-    // 파일명 규칙: "실제클래스_01.jpg" 또는 "can_01.jpg"
-    // 파일명 앞부분을 실제 클래스 라벨로 사용하고,
-    // 추가로 자주 쓰는 별칭은 아래 객체에 선언하면 됩니다.
     const FILE_NAME_ALIASES = {
       "쌍떡잎": "쌍떡잎식물",
       "쌍떡잎식물": "쌍떡잎식물",
