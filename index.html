@@ -109,6 +109,18 @@
             font-weight: 800;
         }
 
+        .reflection-msg {
+            width: min(100%, 430px);
+            margin: 10px auto 0;
+            padding: 13px 16px;
+            color: #385448;
+            background: #f0f8ef;
+            border: 1px solid #c9e3c9;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 750;
+        }
+
         .result-tip {
             width: min(100%, 430px);
             margin: 12px auto 0;
@@ -253,8 +265,10 @@
                             </section>`;
                     } else if (topClassName.includes("쌍떡잎")) {
                         html += `<div class="result-msg">🌿 쌍떡잎식물은 그물맥의 형태를 갖고있어요!</div>`;
+                        html += `<div class="reflection-msg">쌍떡잎식물 같아요! 여러분의 생각은 어떤가요?</div>`;
                     } else if (topClassName.includes("외떡잎")) {
                         html += `<div class="result-msg">🌾 외떡잎식물은 나란히맥의 형태를 갖고있어요!</div>`;
+                        html += `<div class="reflection-msg">외떡잎식물 같아요! 여러분의 생각은 어떤가요?</div>`;
                     }
 
                     html += `<div class="result-tip">🔎 잎맥의 형태를 다시 한번 살펴보아요!</div>`;
