@@ -170,9 +170,28 @@
     <script>
         let model = null;
         let maxPredictions = 0;
+        const UNKNOWN_CLASS_NAMES = new Set(["background", "배경"]);
+        const UNKNOWN_PROBABILITY_THRESHOLD = 0.7;
 
         function setStatus(message) {
             document.getElementById("label-container").innerHTML = message;
+        }
+
+        function isUnknownClass(className) {
+            return UNKNOWN_CLASS_NAMES.has(String(className).trim().toLowerCase());
+        }
+
+        function getUnknownMessage() {
+            return `
+                <div class="unknown-msg">🤔 특징이 모호하여 잘 모르겠어요!</div>
+                <section class="photo-tips" aria-label="사진 촬영 팁">
+                    <p class="photo-tips-title">📸 더 정확하게 알아보려면 이렇게 찍어주세요</p>
+                    <ol>
+                        <li>잎을 화면 가운데에 두고 찍어요.</li>
+                        <li>다른 잎과 함께 나오지 않도록 찍어요.</li>
+                        <li>밝은 곳에서 잎이 크고 선명하게 보이도록, 흔들리지 않게 찍어요.</li>
+                    </ol>
+                </section>`;
         }
 
         async function init() {
@@ -210,22 +229,40 @@
             imgElement.onload = async function () {
                 try {
                     const prediction = await model.predict(imgElement);
-                    let html = "<div class='prediction-list'>";
                     let maxProb = 0;
                     let topClassName = "";
 
-                    for (let i = 0; i < maxPredictions; i++) {
-                        const probability = prediction[i].probability;
-                        const probPercent = (probability * 100).toFixed(1);
-                        if (probability > maxProb) {
-                            maxProb = probability;
+                    for (let i = 0; i < prediction.length; i++) {
+                        if (prediction[i].probability > maxProb) {
+                            maxProb = prediction[i].probability;
                             topClassName = prediction[i].className;
                         }
+                    }
+
+                    // background(배경) 클래스는 확률 목록에 표시하지 않고,
+                    // 가장 높은 예측 결과여도 사용자에게는 '잘 모르겠어요'로 안내한다.
+                    if (isUnknownClass(topClassName) || maxProb < UNKNOWN_PROBABILITY_THRESHOLD) {
+                        setStatus(getUnknownMessage());
+                        return;
+                    }
+
+                    let html = "<div class='prediction-list'>";
+                    for (let i = 0; i < prediction.length; i++) {
+                        const item = prediction[i];
+                        if (isUnknownClass(item.className)) continue;
+
+                        const probPercent = (item.probability * 100).toFixed(1);
+                        const safeClassName = String(item.className)
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/\"/g, "&quot;")
+                            .replace(/'/g, "&#39;");
 
                         html += `
-                            <div class="prediction-name">${prediction[i].className}</div>
+                            <div class="prediction-name">${safeClassName}</div>
                             <div class="prediction-row">
-                                <div class="bar-container" role="img" aria-label="${prediction[i].className}: ${probPercent}%">
+                                <div class="bar-container" role="img" aria-label="${safeClassName}: ${probPercent}%">
                                     <div class="bar" style="width: ${probPercent}%"></div>
                                 </div>
                                 <span class="probability-label">${probPercent}%</span>
@@ -233,18 +270,7 @@
                     }
                     html += "</div>";
 
-                    if (maxProb < 0.7) {
-                        html += `<div class="unknown-msg">🤔 특징이 모호하여 잘 모르겠어요!</div>`;
-                        html += `
-                            <section class="photo-tips" aria-label="사진 촬영 팁">
-                                <p class="photo-tips-title">📸 더 정확하게 알아보려면 이렇게 찍어주세요</p>
-                                <ol>
-                                    <li>잎을 화면 가운데에 두고 찍어요.</li>
-                                    <li>다른 잎과 함께 나오지 않도록 찍어요.</li>
-                                    <li>밝은 곳에서 잎이 크고 선명하게 보이도록, 흔들리지 않게 찍어요.</li>
-                                </ol>
-                            </section>`;
-                    } else if (topClassName.includes("쌍떡잎")) {
+                    if (topClassName.includes("쌍떡잎")) {
                         html += `
                             <section class="result-msg">
                                 <p class="result-heading">🌿 쌍떡잎식물 같아요! 여러분의 생각은 어떤가요?</p>
@@ -262,6 +288,9 @@
                                     <li>잎맥의 형태에 집중하여 다시 한번 살펴보아요.</li>
                                 </ul>
                             </section>`;
+                    } else {
+                        // 모델의 다른/알 수 없는 클래스도 식물 종류로 단정하지 않는다.
+                        html += getUnknownMessage();
                     }
 
                     setStatus(html);
