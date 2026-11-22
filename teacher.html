@@ -3,159 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>교사용 평가 화면</title>
+  <title>너는 쌍떡잎이니? 외떡잎이니?</title>
   <style>
-    :root{color-scheme:light;--bg:#f4f7fb;--panel:#fff;--line:#d7e1ee;--ink:#172b44;--blue:#10477f;--blue-dark:#0b3b70;--muted:#718096;--ok:#e8f6ed;--bad:#fde4e4}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR',Arial,sans-serif}
-    .page{max-width:1180px;margin:0 auto;padding:28px 20px 40px}.topbar{margin:0 0 22px}.topbar h1{margin:0;color:var(--blue-dark);font-size:clamp(26px,4vw,38px)}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.panel{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 5px 16px rgba(20,50,80,.05)}
-    .panel h2{margin:0 0 16px;font-size:21px;color:#174b78}.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.controls input{max-width:100%}button{border:0;border-radius:8px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--blue);color:#fff}button.secondary{background:#edf2f7;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.55;cursor:not-allowed}
-    .hint,.status{font-size:14px;line-height:1.6;color:var(--muted);margin:12px 0 0}.accuracy{margin-top:16px;font-size:15px}.accuracy strong{display:block;color:var(--blue);font-size:32px;margin-top:3px}
-    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table.matrix{width:100%;min-width:450px;border-collapse:collapse;table-layout:auto;font-size:16px}table.matrix th,table.matrix td{border:1px solid var(--line);padding:13px 12px;text-align:center}table.matrix thead th{background:var(--blue);color:#fff;font-size:16px;font-weight:750;white-space:nowrap}table.matrix tbody th{color:var(--blue);text-align:left;font-size:16px;white-space:nowrap;background:#fff}table.matrix td{font-size:18px;color:#172b44}table.matrix td.ok{background:var(--ok);font-weight:750}table.matrix td.bad{background:var(--bad);font-weight:750}table.matrix td.zero{background:#fff}
-    .bars{display:grid;gap:12px}.bar-row{display:grid;grid-template-columns:minmax(90px,130px) 1fr 55px;gap:10px;align-items:center;font-size:14px}.bar-label{overflow-wrap:anywhere;font-weight:700}.track{height:13px;border-radius:10px;background:#e8edf3;overflow:hidden}.fill{height:100%;background:#3479bd}.bar-value{text-align:right;font-weight:700}
-    .wrong-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.wrong-card{border:1px solid #e6a3a3;border-radius:10px;padding:7px;background:#fff}.wrong-card img{display:block;width:100%;height:130px;object-fit:contain;background:#f5f7fa}.wrong-card p{margin:7px 0 0;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.empty{padding:14px;color:var(--muted);font-size:14px}.footnote{margin-top:20px;text-align:center;color:var(--muted);font-size:13px}
-    @media(max-width:760px){.grid{grid-template-columns:1fr}.page{padding:20px 12px}.panel{padding:18px}.panel h2{font-size:19px}}
+    :root{color-scheme:light;--bg:#f2f7f1;--panel:rgba(255,255,255,.94);--line:rgba(35,132,91,.15);--text:#263b32;--muted:#6d7f75;--primary:#23845b;--primary-dark:#176345;--green:#23845b;--green-soft:#eaf7ed;--danger:#b94f3d;--danger-soft:#fff1eb;--gold-soft:#fff6df}
+    *{box-sizing:border-box}body{min-height:100vh;margin:0;background:radial-gradient(circle at 12% 12%,rgba(181,222,181,.45),transparent 28%),radial-gradient(circle at 90% 85%,rgba(255,224,168,.4),transparent 25%),var(--bg);font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:var(--text)}
+    .page{max-width:1220px;margin:0 auto;padding:38px 18px 34px}.topbar{display:flex;justify-content:center;align-items:center;gap:12px;margin:4px 0 26px;text-align:center;font-weight:800;color:#234b39}.topbar .icon{width:30px;height:30px;display:inline-block;position:relative}.topbar .icon::before{content:'🌿';position:absolute;inset:0;font-size:25px;line-height:30px}.brand{font-size:clamp(24px,4vw,33px);letter-spacing:-.03em;line-height:1.25;margin:0;font-weight:800}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px 22px;min-height:300px;box-shadow:0 12px 32px rgba(44,78,55,.09)}.panel h3{margin:0 0 20px;font-size:21px;font-weight:800;letter-spacing:-.02em;color:#234b39}.label{margin:0 0 8px;display:block;color:#60766a;font-size:15px;line-height:1.5}.upload-wrap{position:relative;margin:0 0 16px}.file-input{width:100%;min-height:48px;padding:12px;border:1px dashed rgba(35,132,91,.35);border-radius:12px;background:#f7fbf6;font-size:14px;color:#60766a;outline:none;display:block}.file-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(35,132,91,.12)}.file-input::file-selector-button{display:none}
+    .btn-row{display:flex;align-items:center;gap:10px;margin-top:10px}.btn{appearance:none;border:1px solid transparent;border-radius:12px;padding:0 18px;min-height:46px;font-size:15px;font-weight:750;cursor:pointer;font-family:inherit;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}.btn:focus-visible,.csv-btn:focus-visible{outline:3px solid #f3c969;outline-offset:3px}.btn.primary{flex:1;background:linear-gradient(135deg,#31a66f,#218054);color:#fff;box-shadow:0 7px 16px rgba(35,132,91,.2)}.btn.primary:hover{background:linear-gradient(135deg,#278d5e,#176345);transform:translateY(-1px);box-shadow:0 9px 18px rgba(35,132,91,.25)}.btn.secondary{background:#f3f7f2;color:#455b4e;border-color:rgba(35,132,91,.18);min-width:90px}.btn.secondary:hover{background:#eaf2e9}.btn:disabled{opacity:.55;cursor:not-allowed}
+    .status-line{margin-top:16px;color:#60766a;font-size:14px;letter-spacing:-.01em}.accuracy{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:#455b4e}.accuracy .title{display:block;margin-bottom:6px;font-weight:650;color:#60766a}.accuracy .value{font-size:26px;font-weight:800;color:var(--green);letter-spacing:-.03em}.accuracy .value .sub{font-size:17px;font-weight:700;color:#60766a;margin-left:2px}.success{margin-top:16px;color:var(--green);font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:8px}.success::before{content:'✓';display:inline-block;width:20px;height:20px;text-align:center;line-height:20px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:900}
+    .empty-box{border:1px solid rgba(35,132,91,.14);border-radius:14px;background:#f8fbf7;min-height:70px;display:flex;align-items:center;justify-content:center;color:#74877b;font-size:15px;text-align:center;padding:20px}.bars{display:flex;flex-direction:column;gap:12px}.bar-row{display:grid;grid-template-columns:120px 1fr 70px;align-items:center;gap:10px;min-height:22px;font-size:14px}.bar-row .label{margin:0;font-size:13px;color:#425b4e;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}.bar-track{position:relative;height:12px;border-radius:99px;background:#e8eee8;overflow:hidden}.bar-fill{position:absolute;left:0;top:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#70c68e,#25865b);width:0%;transition:width .25s ease}.bar-fill.low{background:linear-gradient(90deg,#f09b78,#b94f3d)}.bar-rate{text-align:right;color:#455b4e;font-size:13px;font-weight:800}.csv-btn{display:inline-flex;align-items:center;justify-content:center;margin-top:14px;background:#fff6df;border:1px solid #f0d48d;border-radius:11px;color:#74521b;font-size:14px;font-weight:750;min-width:132px;min-height:40px;padding:0 16px;cursor:pointer;transition:.2s ease}.csv-btn:hover{background:#ffefc2}.csv-btn:disabled{opacity:.5;cursor:not-allowed}
+    .table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}table.matrix{width:100%;border-collapse:collapse;font-size:14px;color:#2e493b;table-layout:auto}table.matrix th,table.matrix td{border:1px solid var(--line);padding:10px 7px;text-align:center;min-width:56px}table.matrix thead th{background:#f2f8f1;font-weight:750;white-space:nowrap}table.matrix th:first-child{background:#f7f9f5;font-weight:750;white-space:nowrap}table.matrix td.ok{background:var(--green-soft);color:#176345;font-weight:800}table.matrix td.bad{background:var(--danger-soft);color:#a64b37;font-weight:800}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.wrong-card{border:2px solid #e8a18e;border-radius:14px;background:#fff;padding:6px;box-shadow:0 5px 14px rgba(166,75,55,.08)}.wrong-card img{display:block;width:100%;height:110px;object-fit:contain;background:#f7f8f5;border-radius:9px}.wrong-meta{font-size:11px;padding-top:7px;line-height:1.5;overflow-wrap:anywhere;color:#46594d}.toggle-btn{display:none;margin-top:12px}.footnote{margin-top:26px;text-align:center;color:#6d7f75;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.01em}.footnote .shield{display:inline-block;width:14px;height:14px;background:linear-gradient(135deg,#b9d5bd,#78a887);border-radius:3px;position:relative;transform:rotate(45deg)}.footnote .shield::before{content:'';position:absolute;inset:4px;background:rgba(255,255,255,.75);border-radius:2px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.brand{font-size:28px}.panel h3{font-size:20px}}@media(max-width:480px){.page{padding:26px 12px}.panel{padding:21px 17px;border-radius:19px}.topbar{gap:8px;margin-bottom:20px}.brand{font-size:23px}.bar-row{grid-template-columns:94px 1fr 58px;gap:7px}.footnote{align-items:flex-start;font-size:12px;line-height:1.6}}
   </style>
 </head>
 <body>
-  <main class="page">
-    <header class="topbar"><h1>교사용 모델 평가 화면</h1></header>
+  <div class="page">
+    <div class="topbar"><div class="icon" aria-hidden="true"></div><h1 class="brand">너는 쌍떡잎이니? 외떡잎이니?</h1></div>
     <div class="grid">
       <section class="panel">
-        <h2>1. 테스트 사진 넣기</h2>
-        <div class="controls">
-          <input id="file-input" type="file" accept="image/*" multiple />
-          <button id="run-btn" type="button">모델 성능 평가 실행</button>
-          <button id="reset-btn" type="button" class="secondary">초기화</button>
-        </div>
-        <p class="hint">파일 이름은 클래스명_번호.jpg 형식으로 입력해 주세요. 예: 쌍떡잎식물_01.jpg, 외떡잎식물_01.jpg, background_01.jpg</p>
-        <p id="status" class="status">모델을 불러오는 중입니다...</p>
-        <div class="accuracy">전체 정확도<strong id="accuracy">0.0% (0/0)</strong></div>
+        <h3>1. 테스트 사진 넣기</h3>
+        <label class="label" for="file-input">테스트 이미지 일괄 업로드 (여러 장 선택)</label>
+        <div class="upload-wrap"><input class="file-input" id="file-input" type="file" accept="image/*" multiple /></div>
+        <div class="btn-row"><button class="btn primary" id="run-btn" type="button">모델 성능 평가 실행</button><button class="btn secondary" id="reset-btn" type="button">초기화</button></div>
+        <div class="status-line" id="selection-status">선택된 사진 0장 · 판정 대기 중</div>
+        <div class="accuracy"><span class="title">전체 정확도 (Accuracy)</span><div class="value" id="accuracy-value">0.0% <span class="sub">(0/0)</span></div></div>
+        <div class="success" id="model-status">모델 로드 중</div>
       </section>
       <section class="panel">
-        <h2>2. 클래스별 정분류율</h2>
-        <div id="bars" class="bars"><div class="empty">모델을 불러오는 중입니다.</div></div>
+        <h3>2. 클래스별 정분류율</h3>
+        <div class="bars" id="class-bars"><div class="empty-box">테스트 평가를 실행하면 클래스별 성능 지표가 표시됩니다.</div></div>
+        <button type="button" id="csv-download-btn" class="csv-btn" disabled>CSV 내려받기</button>
       </section>
       <section class="panel">
-        <h2>3. 혼동행렬 (행: 실제, 열: 예측)</h2>
+        <h3>3. 혼동행렬 (행: 실제, 열: 예측)</h3>
         <div class="table-wrap"><table class="matrix" id="matrix-table" aria-label="혼동행렬"></table></div>
       </section>
       <section class="panel">
-        <h2 id="wrong-title">4. 틀린 사진 모아 보기</h2>
-        <div id="wrong-gallery" class="empty">평가가 완료되면 오분류된 사진이 표시됩니다.</div>
+        <h3 id="wrong-title">4. 틀린 사진 모아 보기 (0장)</h3>
+        <div id="wrong-gallery" class="empty-box">오인식된 테스트 이미지가 존재하지 않습니다.</div>
+        <button type="button" id="wrong-toggle" class="btn secondary toggle-btn">전체 보기</button>
       </section>
     </div>
-    <p class="footnote">혼동행렬의 행은 실제 클래스, 열은 모델 예측 클래스입니다.</p>
-  </main>
+    <div class="footnote"><span class="shield" aria-hidden="true"></span>브라우저 내에서만 안전하게 연산이 수행되며, 사진 파일은 외부 서버로 전송되지 않습니다.</div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
   <script>
-    const MODEL_URL='./model/';
-    const fileInput=document.getElementById('file-input');
-    const statusEl=document.getElementById('status');
-    const matrixTable=document.getElementById('matrix-table');
-    const aliases={
-      '쌍떡잎':'쌍떡잎식물','쌍떡잎식물':'쌍떡잎식물','dicot':'쌍떡잎식물','그물맥':'쌍떡잎식물',
-      '외떡잎':'외떡잎식물','외떡잎식물':'외떡잎식물','monocot':'외떡잎식물','나란히맥':'외떡잎식물',
-      'background':'background','배경':'background'
-    };
-    let model=null;
-    let labels=[];
-    let results=[];
-    let busy=false;
+    const MODEL_URL='./model/';const WRONG_LIMIT=4;
+    const FILE_NAME_ALIASES={'쌍떡잎':'쌍떡잎식물','쌍떡잎식물':'쌍떡잎식물','dicot':'쌍떡잎식물','그물맥':'쌍떡잎식물','외떡잎':'외떡잎식물','외떡잎식물':'외떡잎식물','monocot':'외떡잎식물','나란히맥':'외떡잎식물','background':'background','배경':'background'};
+    let model=null;let labels=['쌍떡잎식물','외떡잎식물','background'];
+    const fileInput=document.getElementById('file-input'),runBtn=document.getElementById('run-btn'),resetBtn=document.getElementById('reset-btn'),csvDownloadBtn=document.getElementById('csv-download-btn'),selectionStatus=document.getElementById('selection-status'),accuracyValue=document.getElementById('accuracy-value'),classBars=document.getElementById('class-bars'),matrixTable=document.getElementById('matrix-table'),wrongGallery=document.getElementById('wrong-gallery'),wrongTitle=document.getElementById('wrong-title'),wrongToggle=document.getElementById('wrong-toggle'),modelStatus=document.getElementById('model-status');
+    let state={selected:0,results:[],skipped:[],errors:[],seen:new Set(),showAll:false};
+    function normalizeLabel(label){if(!label)return '';return String(label).trim().toLowerCase().replace(/[_\-\s]+/g,'').replace(/[^a-z0-9가-힣]/gi,'')}
+    function resolveLabelName(rawLabel){if(!rawLabel)return null;const source=String(rawLabel).trim(),normalized=normalizeLabel(source);if(FILE_NAME_ALIASES[source])return FILE_NAME_ALIASES[source];if(FILE_NAME_ALIASES[normalized])return FILE_NAME_ALIASES[normalized];return labels.find(label=>normalizeLabel(label)===normalized)||source}
+    function inferActualLabel(fileName){const base=fileName.replace(/\.[^.]+$/,'');const firstToken=(base.split(/[_\-\s]+/)[0]||'').trim();if(!firstToken)return null;const label=resolveLabelName(firstToken);return labels.find(item=>normalizeLabel(item)===normalizeLabel(label))||null}
+    function escapeHtml(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 
-    function normalize(value){return String(value||'').trim().toLowerCase().replace(/[_\-\s]+/g,'').replace(/[^a-z0-9가-힣]/gi,'')}
-    function resolveLabel(raw){
-      if(!raw)return null;
-      const source=String(raw).trim();
-      const alias=aliases[source.toLowerCase()]||aliases[source];
-      if(alias){const match=labels.find(label=>normalize(label)===normalize(alias));return match||alias}
-      return labels.find(label=>normalize(label)===normalize(source))||null;
-    }
-    function inferActual(fileName){
-      const stem=fileName.replace(/\.[^.]+$/,'');
-      const token=(stem.split(/[_\-\s]+/)[0]||'').trim();
-      return resolveLabel(token);
-    }
-    function renderMatrix(){
+    // Matrix header and body are both generated from model labels so every prediction column has a label.
+    function buildMatrix(){
       const counts=labels.map(()=>labels.map(()=>0));
-      results.forEach(result=>{
-        const row=labels.findIndex(label=>normalize(label)===normalize(result.actual));
-        const col=labels.findIndex(label=>normalize(label)===normalize(result.predicted));
-        if(row>=0&&col>=0)counts[row][col]++;
-      });
-      const thead=document.createElement('thead');
-      const header=document.createElement('tr');
-      const corner=document.createElement('th');corner.scope='col';corner.textContent='실제 \\ 예측';header.appendChild(corner);
-      labels.forEach(label=>{const th=document.createElement('th');th.scope='col';th.textContent=label;header.appendChild(th)});
-      thead.appendChild(header);
+      state.results.forEach(result=>{const trueIndex=labels.findIndex(label=>normalizeLabel(label)===normalizeLabel(result.actual)),predIndex=labels.findIndex(label=>normalizeLabel(label)===normalizeLabel(result.predicted));if(trueIndex>=0&&predIndex>=0)counts[trueIndex][predIndex]++});
+      const thead=document.createElement('thead'),header=document.createElement('tr'),corner=document.createElement('th');corner.textContent='실제 \\ 예측';header.appendChild(corner);
+      labels.forEach(label=>{const th=document.createElement('th');th.textContent=label;header.appendChild(th)});thead.appendChild(header);
       const tbody=document.createElement('tbody');
-      labels.forEach((label,row)=>{
-        const tr=document.createElement('tr');
-        const rowHeader=document.createElement('th');rowHeader.scope='row';rowHeader.textContent=label;tr.appendChild(rowHeader);
-        labels.forEach((_,col)=>{const td=document.createElement('td');td.textContent=String(counts[row][col]);td.className=row===col?'ok':counts[row][col]>0?'bad':'zero';tr.appendChild(td)});
-        tbody.appendChild(tr);
-      });
+      labels.forEach((rowLabel,rowIndex)=>{const tr=document.createElement('tr'),th=document.createElement('th');th.textContent=rowLabel;tr.appendChild(th);labels.forEach((_,colIndex)=>{const value=counts[rowIndex][colIndex],td=document.createElement('td');td.textContent=String(value);td.className=rowIndex===colIndex?'ok':value>0?'bad':'';tr.appendChild(td)});tbody.appendChild(tr)});
       matrixTable.replaceChildren(thead,tbody);
     }
-    function render(){
-      renderMatrix();
-      const bars=document.getElementById('bars');bars.replaceChildren();
-      labels.forEach(label=>{
-        const rows=results.filter(item=>normalize(item.actual)===normalize(label));
-        const correct=rows.filter(item=>item.ok).length;
-        const rate=rows.length?correct/rows.length:0;
-        const row=document.createElement('div');row.className='bar-row';
-        const name=document.createElement('div');name.className='bar-label';name.textContent=label;
-        const track=document.createElement('div');track.className='track';
-        const fill=document.createElement('div');fill.className='fill';fill.style.width=(rate*100)+'%';track.appendChild(fill);
-        const value=document.createElement('div');value.className='bar-value';value.textContent=rows.length?(rate*100).toFixed(0)+'%':'-';
-        row.append(name,track,value);bars.appendChild(row);
-      });
-      const correct=results.filter(item=>item.ok).length;
-      document.getElementById('accuracy').textContent=(results.length?(correct/results.length*100):0).toFixed(1)+'% ('+correct+'/'+results.length+')';
-      const wrong=results.filter(item=>!item.ok);
-      document.getElementById('wrong-title').textContent='4. 틀린 사진 모아 보기 ('+wrong.length+'장)';
-      const gallery=document.getElementById('wrong-gallery');gallery.replaceChildren();
-      if(!wrong.length){gallery.className='empty';gallery.textContent=results.length?'오분류된 사진이 없습니다.':'평가가 완료되면 오분류된 사진이 표시됩니다.';return}
-      gallery.className='wrong-gallery';
-      wrong.forEach(item=>{const card=document.createElement('article');card.className='wrong-card';const img=document.createElement('img');img.src=item.url;img.alt=item.file;const meta=document.createElement('p');meta.textContent=item.file+' · 실제: '+item.actual+' → 예측: '+item.predicted;card.append(img,meta);gallery.appendChild(card)});
-    }
-    async function init(){
-      try{
-        if(typeof tmImage==='undefined')throw new Error('Teachable Machine 라이브러리를 불러오지 못했습니다.');
-        model=await tmImage.load(MODEL_URL+'model.json',MODEL_URL+'metadata.json');
-        labels=model.getClassLabels().map((name,index)=>String(name||'').trim()||'클래스 '+(index+1));
-        if(!labels.length)throw new Error('모델 클래스 정보를 찾을 수 없습니다.');
-        render();
-        statusEl.textContent='모델 로드 완료 · 클래스 '+labels.length+'개: '+labels.join(', ');
-      }catch(error){console.error(error);statusEl.textContent='모델 로딩 실패: '+error.message}
-    }
-    async function runEvaluation(){
-      const files=Array.from(fileInput.files||[]);
-      if(!model){statusEl.textContent='모델이 아직 준비되지 않았습니다.';return}
-      if(!files.length){statusEl.textContent='먼저 테스트 사진을 선택해 주세요.';return}
-      if(busy)return;
-      busy=true;document.getElementById('run-btn').disabled=true;results=[];render();
-      let excluded=[];
-      for(const file of files){
-        const actual=inferActual(file.name);
-        if(!actual){excluded.push(file.name);continue}
-        const url=URL.createObjectURL(file);
-        try{
-          const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('이미지를 열 수 없습니다.'));img.src=url});
-          const prediction=await model.predict(image);
-          const best=prediction.reduce((top,item)=>item.probability>top.probability?item:top,prediction[0]);
-          const predicted=labels.find(label=>normalize(label)===normalize(best.className))||best.className;
-          results.push({file:file.name,actual,predicted,probability:best.probability,ok:normalize(actual)===normalize(predicted),url});
-        }catch(error){URL.revokeObjectURL(url);excluded.push(file.name);console.error(file.name,error)}
-      }
-      render();busy=false;document.getElementById('run-btn').disabled=false;
-      statusEl.textContent='평가 완료 · 판정 '+results.length+'장'+(excluded.length?' · 제외 '+excluded.length+'장 (클래스명 확인 필요): '+excluded.join(', '):'');
-    }
-    document.getElementById('run-btn').addEventListener('click',runEvaluation);
-    document.getElementById('reset-btn').addEventListener('click',()=>{results.forEach(item=>URL.revokeObjectURL(item.url));results=[];fileInput.value='';statusEl.textContent='초기화했습니다. 사진을 선택한 뒤 평가를 실행해 주세요.';render()});
-    init();
+    function renderBarPanel(){const overall=state.results.length===0?0:state.results.filter(r=>r.ok).length/state.results.length;classBars.innerHTML='';if(state.results.length===0){classBars.innerHTML='<div class="empty-box">테스트 평가를 실행하면 클래스별 성능 지표가 표시됩니다.</div>';return}labels.forEach(label=>{const items=state.results.filter(r=>normalizeLabel(r.actual)===normalizeLabel(label)),correct=items.filter(r=>r.ok).length,rate=items.length===0?0:correct/items.length,row=document.createElement('div');row.className='bar-row';const name=document.createElement('div');name.className='label';name.textContent=label;row.appendChild(name);const track=document.createElement('div');track.className='bar-track';const fill=document.createElement('div');fill.className='bar-fill'+(rate<overall?' low':'');fill.style.width=(rate*100).toFixed(0)+'%';track.appendChild(fill);row.appendChild(track);const rateEl=document.createElement('div');rateEl.className='bar-rate';rateEl.textContent=items.length===0?'-':(rate*100).toFixed(1)+'%';row.appendChild(rateEl);classBars.appendChild(row)})}
+    function renderWrongGallery(){const wrong=state.results.filter(r=>!r.ok).sort((a,b)=>b.probability-a.probability),show=state.showAll?wrong:wrong.slice(0,WRONG_LIMIT);wrongTitle.textContent=wrong.length===0?'4. 틀린 사진 모아 보기 (0장)':'4. 틀린 사진 모아 보기 ('+wrong.length+'장 중 '+show.length+'장 표시)';if(wrong.length===0){wrongGallery.className='empty-box';wrongGallery.textContent=state.results.length?'오인식된 테스트 이미지가 존재하지 않습니다.':'오인식된 테스트 이미지가 존재하지 않습니다.';wrongToggle.style.display='none';return}wrongGallery.className='gallery';wrongGallery.innerHTML='';show.forEach(result=>{const card=document.createElement('div');card.className='wrong-card';const img=document.createElement('img');img.src=result.objectUrl;img.alt=result.file;const meta=document.createElement('div');meta.className='wrong-meta';meta.innerHTML='<div>파일: '+escapeHtml(result.file)+'</div><div>실제: '+escapeHtml(result.actual)+' → 예측: '+escapeHtml(result.predicted)+'</div><div>확률: '+(result.probability*100).toFixed(1)+'%</div>';card.append(img,meta);wrongGallery.appendChild(card)});if(wrong.length>WRONG_LIMIT){wrongToggle.style.display='inline-flex';wrongToggle.textContent=state.showAll?'접기':'전체 '+wrong.length+'장 보기'}else wrongToggle.style.display='none'}
+    function updateAccuracy(){const total=state.results.length;if(total===0){accuracyValue.innerHTML='0.0% <span class="sub">(0/0)</span>';csvDownloadBtn.disabled=true;return}const correct=state.results.filter(r=>r.ok).length,percent=(correct/total*100).toFixed(1);accuracyValue.innerHTML=percent+'% <span class="sub">('+correct+'/'+total+')</span>';csvDownloadBtn.disabled=false}
+    function renderAll(){buildMatrix();renderBarPanel();renderWrongGallery();updateAccuracy()}
+    function resetState(){state={selected:0,results:[],skipped:[],errors:[],seen:new Set(),showAll:false};selectionStatus.textContent='선택된 사진 0장 · 판정 대기 중';fileInput.value='';renderAll()}
+    function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('사진을 불러오지 못했습니다.'));img.src=url})}
+    function toCsv(rows){const header=['file','actual','predicted','probability','ok'],body=rows.map(r=>[r.file,r.actual,r.predicted,r.probability.toFixed(6),r.ok?'true':'false']),all=[header,...body].map(row=>row.map(value=>'"'+String(value).replace(/"/g,'""')+'"').join(',')).join('\n');return '\uFEFF'+all}
+    function downloadCsv(){if(!state.results.length)return;const blob=new Blob([toCsv(state.results)],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download='evaluation_results.csv';document.body.appendChild(anchor);anchor.click();document.body.removeChild(anchor);URL.revokeObjectURL(url)}
+    async function runEvaluation(){const files=Array.from(fileInput.files||[]);if(files.length===0){selectionStatus.textContent='선택된 사진 0장 · 판정 대기 중';return}if(!model){selectionStatus.textContent='모델이 아직 준비되지 않았습니다.';return}runBtn.disabled=true;runBtn.textContent='평가 중...';state.selected=files.length;state.results.forEach(r=>{if(r.objectUrl)URL.revokeObjectURL(r.objectUrl)});state.results=[];state.skipped=[];state.errors=[];state.seen=new Set();for(const file of files){const actualLabel=inferActualLabel(file.name);if(!actualLabel){state.skipped.push(file.name);continue}let objectUrl=null;try{objectUrl=URL.createObjectURL(file);const img=await loadImage(objectUrl),prediction=await model.predict(img);let best=prediction[0];prediction.forEach(item=>{if(item.probability>best.probability)best=item});const predicted=labels.find(label=>normalizeLabel(label)===normalizeLabel(best.className))||best.className;state.results.push({file:file.name,actual:actualLabel,predicted,probability:best.probability,probs:Object.fromEntries(prediction.map(item=>[item.className,item.probability])),ok:normalizeLabel(actualLabel)===normalizeLabel(predicted),objectUrl})}catch(error){console.error('사진 판정 실패:',file.name,error);state.errors.push(file.name);if(objectUrl)URL.revokeObjectURL(objectUrl)}}selectionStatus.textContent='선택된 사진 '+files.length+'장 · 판정 완료 '+state.results.length+'장'+(state.skipped.length?' · 클래스명을 확인할 수 없어 제외 '+state.skipped.length+'장':'')+(state.errors.length?' · 오류 '+state.errors.length+'장':'');renderAll();runBtn.disabled=false;runBtn.textContent='모델 성능 평가 실행'}
+    async function initModel(){try{if(typeof tmImage==='undefined')throw new Error('Teachable Machine 라이브러리를 불러오지 못했습니다.');model=await tmImage.load(MODEL_URL+'model.json',MODEL_URL+'metadata.json');const classLabels=model.getClassLabels();if(classLabels&&classLabels.length)labels=classLabels.map((label,index)=>String(label||'').trim()||'클래스 '+(index+1));if(!labels.some(label=>normalizeLabel(label)==='background'))labels.push('background');modelStatus.textContent='모델 로드 완료 ('+labels.length+'개 클래스)';renderAll()}catch(error){console.error('모델 로딩 실패:',error);modelStatus.textContent='모델 로딩 실패: '+error.message;modelStatus.style.color='#b94f3d'}}
+    fileInput.addEventListener('change',()=>{const files=Array.from(fileInput.files||[]);selectionStatus.textContent=files.length?'선택된 사진 '+files.length+'장 · 판정 대기 중':'선택된 사진 0장 · 판정 대기 중'});runBtn.addEventListener('click',runEvaluation);resetBtn.addEventListener('click',resetState);csvDownloadBtn.addEventListener('click',downloadCsv);wrongToggle.addEventListener('click',()=>{state.showAll=!state.showAll;renderWrongGallery()});renderAll();initModel();
   </script>
 </body>
 </html>
