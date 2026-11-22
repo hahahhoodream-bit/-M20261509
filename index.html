@@ -16,6 +16,7 @@
         .bar { height: 24px; background-color: #3498db; width: 0%; text-align: right; padding-right: 10px; box-sizing: border-box; color: white; font-size: 14px; line-height: 24px; transition: width 0.5s ease; }
         .unknown-msg { color: #e74c3c; font-size: 20px; margin-top: 15px; font-weight: bold; padding: 10px; border: 2px dashed #e74c3c; border-radius: 8px; max-width: 300px; margin-left: auto; margin-right: auto; }
         .err-detail { font-size: 13px; color: #888; font-weight: normal; }
+        .result-msg { color: #2c3e50; margin-top: 15px; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -78,11 +79,15 @@
                     const prediction = await model.predict(imgElement);
                     let html = "";
                     let maxProb = 0;
+                    let topClassName = "";
 
                     for (let i = 0; i < maxPredictions; i++) {
                         const probability = prediction[i].probability;
                         const probPercent = (probability * 100).toFixed(1);
-                        if (probability > maxProb) maxProb = probability;
+                        if (probability > maxProb) {
+                            maxProb = probability;
+                            topClassName = prediction[i].className;
+                        }
 
                         html += `
                             <div style="text-align: left; max-width: 350px; margin: 0 auto;">
@@ -95,7 +100,12 @@
 
                     if (maxProb < 0.7) {
                         html += `<div class="unknown-msg">🤔 특징이 모호하여<br>잘 모르겠어요!</div>`;
+                    } else if (topClassName.includes("쌍떡잎")) {
+                        html += `<div class="result-msg">쌍떡잎식물은 그물맥의 형태를 갖고있어요!</div>`;
+                    } else if (topClassName.includes("외떡잎")) {
+                        html += `<div class="result-msg">외떡잎식물은 나란히맥의 형태를 갖고있어요!</div>`;
                     }
+
                     setStatus(html);
                 } catch (error) {
                     console.error("예측 실패:", error);
