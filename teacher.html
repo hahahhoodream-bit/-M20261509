@@ -59,7 +59,6 @@
     function inferActualLabel(fileName){const base=fileName.replace(/\.[^.]+$/,'');const firstToken=(base.split(/[_\-\s]+/)[0]||'').trim();if(!firstToken)return null;const label=resolveLabelName(firstToken);return labels.find(item=>normalizeLabel(item)===normalizeLabel(label))||null}
     function escapeHtml(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 
-    // Matrix header and body are both generated from model labels so every prediction column has a label.
     function buildMatrix(){
       const counts=labels.map(()=>labels.map(()=>0));
       state.results.forEach(result=>{const trueIndex=labels.findIndex(label=>normalizeLabel(label)===normalizeLabel(result.actual)),predIndex=labels.findIndex(label=>normalizeLabel(label)===normalizeLabel(result.predicted));if(trueIndex>=0&&predIndex>=0)counts[trueIndex][predIndex]++});
