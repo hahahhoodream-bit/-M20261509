@@ -133,6 +133,22 @@
             font-weight: 800;
         }
 
+        .photo-tips {
+            width: min(100%, 430px);
+            margin: 12px auto 0;
+            padding: 15px 18px;
+            color: #385448;
+            background: #f0f8ef;
+            border: 1px solid #c9e3c9;
+            border-radius: 16px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .photo-tips-title { margin: 0 0 7px; color: #1c6846; font-weight: 800; }
+        .photo-tips ol { margin: 0; padding-left: 22px; }
+        .photo-tips li + li { margin-top: 4px; }
+
         .err-detail { color: #8d5b50; font-size: 13px; font-weight: 500; }
 
         @media (max-width: 480px) {
@@ -226,6 +242,15 @@
 
                     if (maxProb < 0.7) {
                         html += `<div class="unknown-msg">🤔 특징이 모호하여 잘 모르겠어요!</div>`;
+                        html += `
+                            <section class="photo-tips" aria-label="사진 촬영 팁">
+                                <p class="photo-tips-title">📸 더 정확하게 알아보려면 이렇게 찍어주세요</p>
+                                <ol>
+                                    <li>잎을 화면 가운데에 두고 찍어요.</li>
+                                    <li>다른 잎과 함께 나오지 않도록 찍어요.</li>
+                                    <li>밝은 곳에서 잎이 크고 선명하게 보이도록, 흔들리지 않게 찍어요.</li>
+                                </ol>
+                            </section>`;
                     } else if (topClassName.includes("쌍떡잎")) {
                         html += `<div class="result-msg">🌿 쌍떡잎식물은 그물맥의 형태를 갖고있어요!</div>`;
                     } else if (topClassName.includes("외떡잎")) {
