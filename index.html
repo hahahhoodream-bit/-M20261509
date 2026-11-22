@@ -92,8 +92,10 @@
         .status-message { color: #60766a; }
         .prediction-list { margin-top: 18px; }
         .prediction-name { max-width: 380px; margin: 12px auto 5px; text-align: left; color: #385448; font-size: 15px; font-weight: 750; }
-        .bar-container { width: 100%; max-width: 380px; height: 14px; margin: 0 auto 15px; overflow: hidden; background: #e8eee8; border-radius: 99px; }
+        .prediction-row { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 380px; margin: 0 auto 15px; }
+        .bar-container { flex: 1; height: 14px; overflow: hidden; background: #e8eee8; border-radius: 99px; }
         .bar { height: 100%; min-width: 0; color: transparent; background: linear-gradient(90deg, #70c68e, #25865b); border-radius: inherit; transition: width .5s ease; }
+        .probability-label { flex: 0 0 52px; text-align: right; color: #385448; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
         .result-msg {
             width: min(100%, 430px);
@@ -213,8 +215,11 @@
 
                         html += `
                             <div class="prediction-name">${prediction[i].className}</div>
-                            <div class="bar-container" role="img" aria-label="${prediction[i].className}: ${probPercent}%">
-                                <div class="bar" style="width: ${probPercent}%"></div>
+                            <div class="prediction-row">
+                                <div class="bar-container" role="img" aria-label="${prediction[i].className}: ${probPercent}%">
+                                    <div class="bar" style="width: ${probPercent}%"></div>
+                                </div>
+                                <span class="probability-label">${probPercent}%</span>
                             </div>`;
                     }
                     html += "</div>";
